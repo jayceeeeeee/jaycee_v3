@@ -1,3 +1,5 @@
+console.log("JS is working");
+
 let lat = 0;
 let lon = 0;
 
