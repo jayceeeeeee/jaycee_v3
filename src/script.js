@@ -44,17 +44,6 @@ function draw() {
   let earthRadius = conversionMilesToPixels(earthRadiusMiles);
   circle(0, 0, earthRadius * 2);
 
-  let angle = map(humanLon, -180, 180, -PI, PI); // Conversion longitude → angle
-
-  let distance = map(humanLat, -90, 90, earthRadius, 0);  // Conversion latitude → distance
-
-  let x = cos(angle) * distance;
-  let y = sin(angle) * distance;
-
-  fill(0, 200, 255);
-  noStroke();
-  circle(x, y, 12);
-
   /*
     Drawing the (lat, lon) grid around the Human
   */
