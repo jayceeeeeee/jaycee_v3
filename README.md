@@ -7,5 +7,5 @@
   <img src="https://shiastudies.com/en/wp-content/uploads/2022/07/107567_642.png" style="height:250px; width:45%; object-fit:cover;" />
 </p>
 
-Just like Levi in ![Gnosia](https://gnosia.fandom.com/wiki/Gnosia_Wiki) or Levi my ![Jewish tribe](https://en.wikipedia.org/wiki/Tribe_of_Levi) we will now dive into the future and transform every human being into a ![Magician](https://en.wikipedia.org/wiki/Thaumaturgy) - a ![Kijutsushi](https://notes.jaycee.ai/4.+Teachings+%F0%9F%A7%91%E2%80%8D%F0%9F%8E%93/Publish/Main+menu+%F0%9F%8F%AF/Tree+Phone+Life+%F0%9F%93%B3/Kijutsushi+(%E6%A9%9F%E8%A1%93%E5%B8%AB)+%F0%9F%A5%B7%F0%9F%8F%BB)!
+Just like the ![Levites](https://en.wikipedia.org/wiki/Tribe_of_Levi) we will now dive into the future and transform every human being into a ![Magician](https://en.wikipedia.org/wiki/Thaumaturgy) - a ![Kijutsushi](https://notes.jaycee.ai/4.+Teachings+%F0%9F%A7%91%E2%80%8D%F0%9F%8E%93/Publish/Main+menu+%F0%9F%8F%AF/Tree+Phone+Life+%F0%9F%93%B3/Kijutsushi+(%E6%A9%9F%E8%A1%93%E5%B8%AB)+%F0%9F%A5%B7%F0%9F%8F%BB)!
 
