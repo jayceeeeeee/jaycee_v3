@@ -18,7 +18,7 @@ window.draw = function () {
   const lookingAzimuthDegrees = getLookingAzimuthDegrees();
 
   background(20);
-  drawTerritoryGrid(territoryPixels);
+  drawTerritoryGrid(territoryPixels, timeSpace.humanLat, timeSpace.humanLon);
   drawEarth(territoryPixels);
   drawCardinalDirections(territoryPixels, lookingAzimuthDegrees);
   drawKabbalahRing(territoryPixels);
