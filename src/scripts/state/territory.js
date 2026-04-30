@@ -38,6 +38,20 @@ export function setTerritoryMeters(value) {
   territoryMeters = value;
 }
 
+export function getTerritoryGridCells(centerLat, centerLon) {
+  const cells = [];
+
+  // Build the full 9x9 geographic grid so other parts of the app
+  // can consume all cells at once.
+  for (let row = 0; row < TERRITORY_GRID_SIZE; row += 1) {
+    for (let col = 0; col < TERRITORY_GRID_SIZE; col += 1) {
+      cells.push(getTerritoryGridCell(row, col, centerLat, centerLon));
+    }
+  }
+
+  return cells;
+}
+
 export function getTerritoryGridCell(row, col, centerLat, centerLon) {
   // Convert the grid indices into normalized coordinates inside the square:
   // x goes from -0.5 (left edge) to +0.5 (right edge)
@@ -65,20 +79,6 @@ export function getTerritoryGridCell(row, col, centerLat, centerLon) {
   };
 }
 
-export function getTerritoryGridCells(centerLat, centerLon) {
-  const cells = [];
-
-  // Build the full 9x9 geographic grid so other parts of the app
-  // can consume all cells at once.
-  for (let row = 0; row < TERRITORY_GRID_SIZE; row += 1) {
-    for (let col = 0; col < TERRITORY_GRID_SIZE; col += 1) {
-      cells.push(getTerritoryGridCell(row, col, centerLat, centerLon));
-    }
-  }
-
-  return cells;
-}
-
 function normalizeLatitudeLongitude(lat, lon) {
   let normalizedLat = lat;
   let normalizedLon = lon;
@@ -104,6 +104,6 @@ function normalizeLatitudeLongitude(lat, lon) {
 }
 
 function wrapLongitude(lon) {
-  // Bring any longitude back into the standard [-180, 180) interval.
+  // Bring any longitude back into the standard [-180, 180] interval.
   return ((lon + 180) % 360 + 360) % 360 - 180;
 }
