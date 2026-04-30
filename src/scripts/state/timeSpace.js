@@ -8,6 +8,10 @@ import { getKabbalahDateTime } from "../lib/time.js";
 export let humanLat = 37.5665;
 export let humanLon = 126.9780;
 
+// True azimuth in degrees. 0 means facing true north.
+// For now we cannot know where we are looking, so we fix it to the north.
+let lookingAzimuthDegrees = 0;
+
 /*
  * time state
  */
@@ -18,8 +22,17 @@ export function getCurrentTimeSpace() {
   return {
     humanLat,
     humanLon,
+    lookingAzimuthDegrees,
     dateNow
   };
+}
+
+export function getLookingAzimuthDegrees() {
+  return lookingAzimuthDegrees;
+}
+
+export function setLookingAzimuthDegrees(value) {
+  lookingAzimuthDegrees = value;
 }
 
 export function updateGeolocation() {

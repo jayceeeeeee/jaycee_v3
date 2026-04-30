@@ -1,4 +1,4 @@
-export function drawInfoPanel(dateNow, humanLat, humanLon) {
+export function drawInfoPanel(dateNow, humanLat, humanLon, lookingAzimuthDegrees) {
   const pad = (n, z = 2) => String(n).padStart(z, "0");
   const windowX = 20;
   const windowY = 20;
@@ -8,7 +8,7 @@ export function drawInfoPanel(dateNow, humanLat, humanLon) {
   const lineHeight = 14;
   const titleHeight = 18;
   const separatorHeight = 8;
-  const contentHeight = lineHeight * 10;
+  const contentHeight = lineHeight * 11;
   const panelHeight = padding * 2 + titleHeight + separatorHeight + contentHeight;
 
   fill(35, 35, 45, 220);
@@ -41,6 +41,8 @@ export function drawInfoPanel(dateNow, humanLat, humanLon) {
   text("Lat: " + humanLat.toFixed(4), windowX + padding, textY);
   textY += lineHeight;
   text("Lon: " + humanLon.toFixed(4), windowX + padding, textY);
+  textY += lineHeight;
+  text("Looking Azimuth: " + lookingAzimuthDegrees.toFixed(0) + " deg", windowX + padding, textY);
   textY += lineHeight + 5;
 
   const sunrise = dateNow.sunrise

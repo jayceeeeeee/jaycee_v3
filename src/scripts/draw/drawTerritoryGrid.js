@@ -1,5 +1,8 @@
 const TERRITORY_GRID_SIZE = 9;
-const GRID_SAMPLE_OFFSETS = [0.15, 0.5, 0.85];
+const GRID_STROKE_ALPHA = 70;
+const MASK_FADE_INNER_RATIO = 1.0;
+const MASK_FADE_OUTER_RATIO = 1.22;
+const MASK_BACKGROUND = 20;
 
 export function drawTerritoryGrid(radius) {
   const centerX = windowWidth / 2;
@@ -10,40 +13,36 @@ export function drawTerritoryGrid(radius) {
   const startY = centerY - radius;
 
   noFill();
+  stroke(100, 180, 255, GRID_STROKE_ALPHA);
   strokeWeight(1);
 
   for (let row = 0; row < TERRITORY_GRID_SIZE; row += 1) {
     for (let col = 0; col < TERRITORY_GRID_SIZE; col += 1) {
       const x = startX + col * cellSize;
       const y = startY + row * cellSize;
-      const visibility = getCellVisibility(x, y, cellSize, centerX, centerY, radius);
-
-      if (visibility <= 0) {
-        continue;
-      }
-
-      const alpha = map(visibility, 0, 1, 12, 95);
-      stroke(100, 180, 255, alpha);
       rect(x, y, cellSize, cellSize);
     }
   }
+
+  applyTerritoryFadeMask(centerX, centerY, radius);
 }
 
-function getCellVisibility(x, y, cellSize, centerX, centerY, radius) {
-  let visibleSamples = 0;
-  const totalSamples = GRID_SAMPLE_OFFSETS.length ** 2;
+function applyTerritoryFadeMask(centerX, centerY, radius) {
+  const drawingGradient = drawingContext.createRadialGradient(
+    centerX,
+    centerY,
+    radius * MASK_FADE_INNER_RATIO,
+    centerX,
+    centerY,
+    radius * MASK_FADE_OUTER_RATIO
+  );
 
-  for (const offsetY of GRID_SAMPLE_OFFSETS) {
-    for (const offsetX of GRID_SAMPLE_OFFSETS) {
-      const sampleX = x + cellSize * offsetX;
-      const sampleY = y + cellSize * offsetY;
-      const distanceToCenter = dist(sampleX, sampleY, centerX, centerY);
+  drawingGradient.addColorStop(0, `rgba(${MASK_BACKGROUND}, ${MASK_BACKGROUND}, ${MASK_BACKGROUND}, 0)`);
+  drawingGradient.addColorStop(1, `rgba(${MASK_BACKGROUND}, ${MASK_BACKGROUND}, ${MASK_BACKGROUND}, 1)`);
 
-      if (distanceToCenter <= radius) {
-        visibleSamples += 1;
-      }
-    }
-  }
-
-  return visibleSamples / totalSamples;
+  push();
+  noStroke();
+  drawingContext.fillStyle = drawingGradient;
+  drawingContext.fillRect(0, 0, windowWidth, windowHeight);
+  pop();
 }
