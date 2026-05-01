@@ -19,6 +19,9 @@ let lookingAzimuthDegrees = 0;
 let dateNow = getKabbalahDateTime(new Date(), humanLat, humanLon);
 
 export function getCurrentTimeSpace() {
+  // If we want to display in real time
+  //dateNow = getKabbalahDateTime(new Date(), humanLat, humanLon);
+
   return {
     humanLat,
     humanLon,

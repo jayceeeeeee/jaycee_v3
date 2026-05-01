@@ -2,47 +2,64 @@
  * territory state
  */
 
-// The grid is always 9 by 9 for now.
+// Fixed grid resolution used by the current "world on a square" territory view.
+// A 9x9 grid means 81 cells total.
 export const TERRITORY_GRID_SIZE = 9;
 
 // Mean Earth radius in meters. This is precise enough unless we later need
 // ellipsoidal geodesic calculations.
 const EARTH_RADIUS_METERS = 6_371_008.8;
 
-// Quarter of the circumference of the Earth: pi * R / 2.
+// Quarter of Earth's circumference.
+// In the earlier "local horizon" interpretation this was used as a natural
+// maximum reach from the user's position to the horizon edge of the plan.
+// We still keep it as the default conceptual territory size in meters.
 const earthTerritoryMeters = (Math.PI * EARTH_RADIUS_METERS) / 2;
 
-// This is our default conceptual territory size in meters.
-// Here we keep a simple spherical value rather than a more physical ground distance.
+// Conceptual territory radius in meters.
+// This value currently acts more as a semantic state value than as the direct
+// driver of the square world-map projection below.
 export let territoryMeters = earthTerritoryMeters;
 
-// Visual radius of the territory circle on screen.
+// Visual radius of the circular territory drawn on screen.
 export let territoryPixels = getRadiusTerritory();
 
+// Recompute the visual radius when the viewport changes.
 export function updateRadiusTerritory() {
   territoryPixels = getRadiusTerritory();
 }
 
 function getRadiusTerritory() {
-  // The territory circle scales from the smallest viewport dimension
-  // so it always stays visible on screen.
+  // Keep the circle proportional to the smallest viewport dimension so it
+  // always remains visible no matter the screen aspect ratio.
   const minDimension = Math.min(window.innerWidth, window.innerHeight);
   return minDimension * 0.25;
 }
 
+// Getter for the conceptual territory size in meters.
 export function getTerritoryMeters() {
   return territoryMeters;
 }
 
+// Setter for the conceptual territory size in meters.
 export function setTerritoryMeters(value) {
   territoryMeters = value;
 }
 
+// Return all grid cells as geographic cell-center coordinates.
+//
+// The current model is not a true azimuthal projection. Instead, it treats the
+// square as a recentered world map:
+// - total width  = 360 degrees of longitude
+// - total height = 180 degrees of latitude
+// - the user's current position is placed at the square center
+//
+// Each returned item contains:
+// - row / col: the cell index in the 9x9 grid
+// - lat / lon: the geographic coordinates represented by that cell center
 export function getTerritoryGridCells(centerLat, centerLon) {
   const cells = [];
 
-  // Build the full 9x9 geographic grid so other parts of the app
-  // can consume all cells at once.
   for (let row = 0; row < TERRITORY_GRID_SIZE; row += 1) {
     for (let col = 0; col < TERRITORY_GRID_SIZE; col += 1) {
       cells.push(getTerritoryGridCell(row, col, centerLat, centerLon));
@@ -52,23 +69,45 @@ export function getTerritoryGridCells(centerLat, centerLon) {
   return cells;
 }
 
+// Return the geographic coordinates represented by the center of one grid cell.
+//
+// Inputs:
+// - row / col: the cell index inside the 9x9 grid
+// - centerLat / centerLon: the geographic position that must appear at the
+//   exact center of the square projection
+//
+// Process:
+// 1. Convert the cell index into normalized square coordinates.
+// 2. Interpret the square as a 360 x 180 lon/lat world domain.
+// 3. Offset that world domain so the user's position becomes its center.
+// 4. Normalize the result if it crosses a pole or wraps around longitude.
 export function getTerritoryGridCell(row, col, centerLat, centerLon) {
-  // Convert the grid indices into normalized coordinates inside the square:
-  // x goes from -0.5 (left edge) to +0.5 (right edge)
-  // y goes from +0.5 (top edge) to -0.5 (bottom edge)
-  // We use +0.5 cell offsets because we want the center of each cell.
+  // Convert the cell indices into square-relative coordinates.
+  // normalizedX:
+  // - -0.5 at the far left
+  // - +0.5 at the far right
+  //
+  // normalizedY:
+  // - +0.5 at the top
+  // - -0.5 at the bottom
+  //
+  // We add 0.5 because we want the *center* of the cell, not its top-left.
   const normalizedX = ((col + 0.5) / TERRITORY_GRID_SIZE) - 0.5;
   const normalizedY = 0.5 - ((row + 0.5) / TERRITORY_GRID_SIZE);
 
-  // Our current model maps the full square to a full world map:
-  // full width = 360 degrees of longitude
-  // full height = 180 degrees of latitude
-  // The user's own position is the center of that square.
+  // Map the normalized square to a recentered lon/lat rectangle.
+  // The square covers:
+  // - 360 degrees horizontally
+  // - 180 degrees vertically
+  //
+  // So:
+  // - moving by +0.5 in X corresponds to +180 degrees of longitude
+  // - moving by +0.5 in Y corresponds to +90 degrees of latitude
   const rawLat = centerLat + normalizedY * 180;
   const rawLon = centerLon + normalizedX * 360;
 
-  // If we crossed a pole or the date line, bring the coordinates
-  // back into standard geographic ranges.
+  // Raw coordinates may exceed standard geographic ranges. Normalize them so
+  // the final result remains valid as conventional latitude / longitude.
   const normalizedCoordinates = normalizeLatitudeLongitude(rawLat, rawLon);
 
   return {
@@ -79,19 +118,89 @@ export function getTerritoryGridCell(row, col, centerLat, centerLon) {
   };
 }
 
+// Project an actual geographic coordinate back into the territory square.
+//
+// This is the inverse companion of getTerritoryGridCell(...), used when we
+// already have a real lat/lon point (for example a point on a geodesic) and we
+// want to know where it should appear inside the recentered square map.
+//
+// Returned coordinates are normalized in square space:
+// - normalizedX in roughly [-0.5, +0.5]
+// - normalizedY in roughly [-0.5, +0.5]
+//
+// The function may return null when no representation fits inside the current
+// square window centered on centerLat / centerLon.
+export function projectLatLonToTerritoryMap(lat, lon, centerLat, centerLon) {
+  // A single geographic point can be represented by different "raw" lon/lat
+  // values before normalization, especially when pole reflections are involved.
+  // We generate a few candidates, then keep the one that falls inside the
+  // current 360 x 180 recentered window.
+  const candidateRawCoordinates = getRawCoordinateCandidates(lat, lon);
+  let bestProjection = null;
+
+  for (const candidate of candidateRawCoordinates) {
+    // Also test nearby longitude turns so points near the dateline can still be
+    // projected into the current centered window.
+    for (let longitudeTurn = -1; longitudeTurn <= 1; longitudeTurn += 1) {
+      const rawLon = candidate.rawLon + longitudeTurn * 360;
+      const rawLat = candidate.rawLat;
+
+      // The current square only shows latitudes within +/- 90 degrees around
+      // the chosen center.
+      if (rawLat < centerLat - 90 || rawLat > centerLat + 90) {
+        continue;
+      }
+
+      // The current square only shows longitudes within +/- 180 degrees around
+      // the chosen center.
+      if (rawLon < centerLon - 180 || rawLon > centerLon + 180) {
+        continue;
+      }
+
+      // Convert back to normalized square coordinates.
+      const normalizedX = (rawLon - centerLon) / 360;
+      const normalizedY = (rawLat - centerLat) / 180;
+      const projection = {
+        normalizedX,
+        normalizedY
+      };
+
+      // For now, the first valid representation is enough.
+      if (bestProjection === null) {
+        bestProjection = projection;
+      }
+    }
+  }
+
+  return bestProjection;
+}
+
+// Normalize possibly out-of-range latitude / longitude values.
+//
+// Why this is needed:
+// - latitude is only valid in [-90, +90]
+// - longitude is usually wrapped into [-180, +180)
+//
+// When latitude goes beyond a pole:
+// - latitude reflects back
+// - longitude shifts by 180 degrees
+//
+// Example:
+// - 100N, 20E becomes 80N, 160W
+//
+// This is the geographic meaning of "passing over the pole and coming back
+// down on the other side of the globe".
 function normalizeLatitudeLongitude(lat, lon) {
   let normalizedLat = lat;
   let normalizedLon = lon;
 
-  // If we go past the north pole, latitude reflects back downward
-  // and longitude flips by 180 degrees because we are now on the
-  // opposite meridian.
+  // Reflect across the north pole until latitude is valid again.
   while (normalizedLat > 90) {
     normalizedLat = 180 - normalizedLat;
     normalizedLon += 180;
   }
 
-  // Same idea when we go past the south pole.
+  // Reflect across the south pole until latitude is valid again.
   while (normalizedLat < -90) {
     normalizedLat = -180 - normalizedLat;
     normalizedLon += 180;
@@ -103,7 +212,26 @@ function normalizeLatitudeLongitude(lat, lon) {
   };
 }
 
+// Generate possible "raw" representations of a normalized geographic point.
+//
+// In this square-world model, one final lat/lon can correspond to multiple raw
+// positions before the normalization step:
+// - the direct representation
+// - the representation obtained after crossing the north pole
+// - the representation obtained after crossing the south pole
+//
+// These candidates are useful for reverse-projection back into the centered map.
+function getRawCoordinateCandidates(lat, lon) {
+  return [
+    { rawLat: lat, rawLon: lon },
+    { rawLat: 180 - lat, rawLon: lon - 180 },
+    { rawLat: -180 - lat, rawLon: lon - 180 }
+  ];
+}
+
 function wrapLongitude(lon) {
-  // Bring any longitude back into the standard [-180, 180] interval.
+  // Wrap any longitude into the standard geographic interval [-180, 180).
+  // This keeps east/west values canonical even after adding or subtracting
+  // full turns of 360 degrees.
   return ((lon + 180) % 360 + 360) % 360 - 180;
 }

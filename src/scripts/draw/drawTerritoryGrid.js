@@ -29,10 +29,8 @@ export function drawTerritoryGrid(radius, centerLat, centerLon) {
   textSize(7);
 
   drawGridCells(startX, startY, cellSize);
-  drawGridCoordinates(startX, startY, cellSize, centerLat, centerLon);
-
-  // Finally soften everything near and beyond the circle edge.
-  applyTerritoryFadeMask(centerX, centerY, radius);
+  //for now it is not useful to draw the coordinates of the earth map
+  //drawGridCoordinates(startX, startY, cellSize, centerLat, centerLon);
 }
 
 function drawGridCells(startX, startY, cellSize) {
@@ -68,7 +66,9 @@ function drawGridCoordinates(startX, startY, cellSize, centerLat, centerLon) {
 
 // Build a radial gradient that stays transparent inside the circle
 // and gradually blends back to the sketch background outside it.
-function applyTerritoryFadeMask(centerX, centerY, radius) {
+export function applyTerritoryFadeMask(radius) {
+  const centerX = windowWidth / 2;
+  const centerY = windowHeight / 2;
   const drawingGradient = drawingContext.createRadialGradient(
     centerX,
     centerY,

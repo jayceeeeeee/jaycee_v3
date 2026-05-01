@@ -42,7 +42,7 @@ export function drawInfoPanel(dateNow, humanLat, humanLon, lookingAzimuthDegrees
   textY += lineHeight;
   text("Lon: " + humanLon.toFixed(4), windowX + padding, textY);
   textY += lineHeight;
-  text("Looking Azimuth: " + lookingAzimuthDegrees.toFixed(0) + " deg", windowX + padding, textY);
+  text("Looking Azimuth: " + lookingAzimuthDegrees.toFixed(0) + "°", windowX + padding, textY);
   textY += lineHeight + 5;
 
   const sunrise = dateNow.sunrise

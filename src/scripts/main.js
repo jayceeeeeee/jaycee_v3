@@ -3,7 +3,8 @@ import { drawDegrees } from "./draw/drawDegrees.js";
 import { drawEarth } from "./draw/drawEarth.js";
 import { drawInfoPanel } from "./draw/drawInfoPanel.js";
 import { drawKabbalahRing } from "./draw/drawKabbalahRing.js";
-import { drawTerritoryGrid } from "./draw/drawTerritoryGrid.js";
+import { drawSunProjection } from "./draw/drawSunProjection.js";
+import { applyTerritoryFadeMask, drawTerritoryGrid } from "./draw/drawTerritoryGrid.js";
 import { drawTimeRing } from "./draw/drawTimeRing.js";
 import { territoryPixels, updateRadiusTerritory } from "./state/territory.js";
 import { getCurrentTimeSpace, getLookingAzimuthDegrees, updateGeolocation } from "./state/timeSpace.js";
@@ -20,6 +21,8 @@ window.draw = function () {
   background(20);
   drawTerritoryGrid(territoryPixels, timeSpace.humanLat, timeSpace.humanLon);
   drawEarth(territoryPixels);
+  drawSunProjection(territoryPixels, timeSpace.dateNow, timeSpace.humanLat, timeSpace.humanLon);
+  applyTerritoryFadeMask(territoryPixels);
   drawCardinalDirections(territoryPixels, lookingAzimuthDegrees);
   drawKabbalahRing(territoryPixels);
   drawTimeRing(territoryPixels);
