@@ -128,51 +128,28 @@ export function getTerritoryGridCell(row, col, centerLat, centerLon) {
 // - normalizedX in roughly [-0.5, +0.5]
 // - normalizedY in roughly [-0.5, +0.5]
 //
-// The function may return null when no representation fits inside the current
-// square window centered on centerLat / centerLon.
+// The function may return null when the latitude does not fit inside the
+// current vertical window centered on centerLat.
 export function projectLatLonToTerritoryMap(lat, lon, centerLat, centerLon) {
-  // A single geographic point can be represented by different "raw" lon/lat
-  // values before normalization, especially when pole reflections are involved.
-  // We generate a few candidates, then keep the one that falls inside the
-  // current 360 x 180 recentered window.
-  const candidateRawCoordinates = getRawCoordinateCandidates(lat, lon);
-  let bestProjection = null;
+  const rawLat = lat;
 
-  for (const candidate of candidateRawCoordinates) {
-    // Also test nearby longitude turns so points near the dateline can still be
-    // projected into the current centered window.
-    for (let longitudeTurn = -1; longitudeTurn <= 1; longitudeTurn += 1) {
-      const rawLon = candidate.rawLon + longitudeTurn * 360;
-      const rawLat = candidate.rawLat;
-
-      // The current square only shows latitudes within +/- 90 degrees around
-      // the chosen center.
-      if (rawLat < centerLat - 90 || rawLat > centerLat + 90) {
-        continue;
-      }
-
-      // The current square only shows longitudes within +/- 180 degrees around
-      // the chosen center.
-      if (rawLon < centerLon - 180 || rawLon > centerLon + 180) {
-        continue;
-      }
-
-      // Convert back to normalized square coordinates.
-      const normalizedX = (rawLon - centerLon) / 360;
-      const normalizedY = (rawLat - centerLat) / 180;
-      const projection = {
-        normalizedX,
-        normalizedY
-      };
-
-      // For now, the first valid representation is enough.
-      if (bestProjection === null) {
-        bestProjection = projection;
-      }
-    }
+  // The current square only shows latitudes within +/- 90 degrees around
+  // the chosen center.
+  if (rawLat < centerLat - 90 || rawLat > centerLat + 90) {
+    return null;
   }
 
-  return bestProjection;
+  // Recenter longitude around the chosen map center by wrapping the longitude
+  // difference into [-180, 180). This directly gives the longitude copy that
+  // belongs to the current 360-degree horizontal window.
+  const rawLon = centerLon + wrapLongitude(lon - centerLon);
+
+  // interval is [-0.5, +0.5] in both dimensions
+  // and it will be projected onto the canva later.
+  return {
+    normalizedX: (rawLon - centerLon) / 360,
+    normalizedY: (rawLat - centerLat) / 180
+  };
 }
 
 // Normalize possibly out-of-range latitude / longitude values.
@@ -210,23 +187,6 @@ function normalizeLatitudeLongitude(lat, lon) {
     lat: normalizedLat,
     lon: wrapLongitude(normalizedLon)
   };
-}
-
-// Generate possible "raw" representations of a normalized geographic point.
-//
-// In this square-world model, one final lat/lon can correspond to multiple raw
-// positions before the normalization step:
-// - the direct representation
-// - the representation obtained after crossing the north pole
-// - the representation obtained after crossing the south pole
-//
-// These candidates are useful for reverse-projection back into the centered map.
-function getRawCoordinateCandidates(lat, lon) {
-  return [
-    { rawLat: lat, rawLon: lon },
-    { rawLat: 180 - lat, rawLon: lon - 180 },
-    { rawLat: -180 - lat, rawLon: lon - 180 }
-  ];
 }
 
 function wrapLongitude(lon) {
