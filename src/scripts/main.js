@@ -1,6 +1,6 @@
 import { drawCardinalDirections } from "./draw/drawCardinalDirections.js";
 import { drawDegrees } from "./draw/drawDegrees.js";
-import { drawEarth } from "./draw/drawEarth.js";
+import { drawEarth, drawEarthCenterMarker } from "./draw/drawEarth.js";
 import { drawInfoPanel } from "./draw/drawInfoPanel.js";
 import { drawKabbalahRing } from "./draw/drawKabbalahRing.js";
 import { drawSunProjection } from "./draw/drawSunProjection.js";
@@ -27,6 +27,7 @@ window.draw = function () {
   drawKabbalahRing(territoryPixels);
   drawTimeRing(territoryPixels);
   drawDegrees(territoryPixels);
+  drawEarthCenterMarker();
   drawInfoPanel(timeSpace.dateNow, timeSpace.humanLat, timeSpace.humanLon, lookingAzimuthDegrees);
 };
 

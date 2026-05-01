@@ -32,7 +32,6 @@ export function drawSunProjection(radius, dateNow, humanLat, humanLon) {
   const greatCirclePoints = getGreatCircleMapPoints(humanLat, humanLon, sunBearingDegrees, humanLat, humanLon);
 
   drawGreatCircleCurve(greatCirclePoints, centerX, centerY, diameter);
-  drawSunBearingMarker(centerX, centerY);
 }
 
 // Convert the Sun's current azimuth into a standard geographic bearing.
@@ -162,15 +161,6 @@ function drawGreatCircleCurve(points, centerX, centerY, diameter) {
     addCurveVertex(segment[segment.length - 1], centerX, centerY, diameter);
     endShape();
   }
-}
-
-// Draw the user's location at the center of the territory map.
-// The solar geodesic always passes through this point because it starts
-// from the user's current position with the Sun's current bearing.
-function drawSunBearingMarker(centerX, centerY) {
-  noStroke();
-  fill(255, 95, 95, 220);
-  circle(centerX, centerY, 8);
 }
 
 // Split the projected point list into multiple drawable segments whenever
