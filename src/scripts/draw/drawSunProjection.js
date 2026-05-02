@@ -4,7 +4,7 @@ import { projectLatLonToTerritoryMap } from "../state/territory.js";
 // More samples = smoother curve, but also more computation each frame.
 // 361 is a nice number because it includes both the start and end points of the circle, which makes the curve drawing code simpler.
 // 10 is also a nice number because it corresponds to the grid.
-const GREAT_CIRCLE_SAMPLES = 10;
+const GREAT_CIRCLE_SAMPLES = 100;
 
 // If two consecutive projected points jump too far horizontally, it usually
 // means the curve crossed the wrapped map boundary. In that case we split the

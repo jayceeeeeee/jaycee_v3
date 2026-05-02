@@ -20,7 +20,6 @@ export function drawCardinalDirections(radius, lookingAzimuthDegrees) {
   for (const cardinal of CARDINALS) {
     const relativeAzimuthDegrees = normalizeDegrees(cardinal.azimuthDegrees - lookingAzimuthDegrees);
     const angleRadians = radians(relativeAzimuthDegrees - 90);
-    const isForwardDirection = relativeAzimuthDegrees === 0;
     const x = centerX + cos(angleRadians) * labelRadius;
     const y = centerY + sin(angleRadians) * labelRadius;
 
@@ -30,17 +29,16 @@ export function drawCardinalDirections(radius, lookingAzimuthDegrees) {
       angleRadians,
       arrowBaseRadius,
       arrowTipRadius,
-      arrowWingRadius,
-      isForwardDirection
+      arrowWingRadius
     );
 
     noStroke();
-    fill(200, 230, 255, isForwardDirection ? 230 : 180);
+    fill(200, 230, 255, 180);
     text(cardinal.label, x, y);
   }
 }
 
-function drawCompassArrow(centerX, centerY, angleRadians, baseRadius, tipRadius, wingRadius, isForwardDirection) {
+function drawCompassArrow(centerX, centerY, angleRadians, baseRadius, tipRadius, wingRadius) {
   const tipX = centerX + cos(angleRadians) * tipRadius;
   const tipY = centerY + sin(angleRadians) * tipRadius;
   const baseX = centerX + cos(angleRadians) * baseRadius;
@@ -51,12 +49,12 @@ function drawCompassArrow(centerX, centerY, angleRadians, baseRadius, tipRadius,
   const rightWingX = centerX + cos(angleRadians + wingSpreadRadians) * wingRadius;
   const rightWingY = centerY + sin(angleRadians + wingSpreadRadians) * wingRadius;
 
-  stroke(130, 210, 255, isForwardDirection ? 220 : 150);
-  strokeWeight(isForwardDirection ? 1.2 : 0.9);
+  stroke(130, 210, 255, 150);
+  strokeWeight(0.9);
   line(baseX, baseY, tipX, tipY);
 
   noStroke();
-  fill(130, 210, 255, isForwardDirection ? 210 : 130);
+  fill(130, 210, 255, 130);
   triangle(tipX, tipY, leftWingX, leftWingY, rightWingX, rightWingY);
 }
 
