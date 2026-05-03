@@ -1,8 +1,8 @@
 import { sephiroth } from "../data/sephiroth.js";
+import { getSketchLayoutMetrics } from "../layout/sketchLayout.js";
 
 export function drawKabbalahRing(innerRadius) {
-  const centerX = windowWidth / 2;
-  const centerY = windowHeight / 2;
+  const { centerX, centerY } = getSketchLayoutMetrics(width, height);
   const margin = 40;
   const radius = innerRadius + margin;
   const boundaries = sephiroth.map((item) => item.deg);

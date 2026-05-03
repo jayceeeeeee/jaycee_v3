@@ -1,3 +1,5 @@
+import { getSketchLayoutMetrics } from "../layout/sketchLayout.js";
+
 /*
  * territory state
  */
@@ -22,17 +24,20 @@ const earthTerritoryMeters = (Math.PI * EARTH_RADIUS_METERS) / 2;
 export let territoryMeters = earthTerritoryMeters;
 
 // Visual radius of the circular territory drawn on screen.
-export let territoryPixels = getRadiusTerritory();
+export let territoryPixels = getRadiusTerritory(window.innerWidth, window.innerHeight);
 
 // Recompute the visual radius when the viewport changes.
-export function updateRadiusTerritory() {
-  territoryPixels = getRadiusTerritory();
+export function updateRadiusTerritory(viewportWidth = window.innerWidth, viewportHeight = window.innerHeight) {
+  // If no explicit size is passed, fall back to the current browser viewport.
+  territoryPixels = getRadiusTerritory(viewportWidth, viewportHeight);
 }
 
-function getRadiusTerritory() {
-  // Keep the circle proportional to the smallest viewport dimension so it
-  // always remains visible no matter the screen aspect ratio.
-  const minDimension = Math.min(window.innerWidth, window.innerHeight);
+function getRadiusTerritory(viewportWidth, viewportHeight) {
+  const layoutMetrics = getSketchLayoutMetrics(viewportWidth, viewportHeight);
+
+  // Keep the circle proportional to the smallest usable dimension so it stays
+  // centered in the visible scene, not underneath the desktop side panel.
+  const minDimension = Math.min(layoutMetrics.availableWidth, layoutMetrics.availableHeight);
   return minDimension * 0.25;
 }
 

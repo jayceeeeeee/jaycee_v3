@@ -7,6 +7,86 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <div class="app-shell">
+      <main class="app-layout">
+        <section class="canvas-shell">
+          <div id="canvas-container" class="canvas-container"></div>
+        </section>
+
+        <button
+          id="panel-toggle"
+          class="panel-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="info-panel"
+        >
+          Menu
+        </button>
+
+        <div id="panel-backdrop" class="panel-backdrop" hidden></div>
+
+        <aside id="info-panel" class="info-panel" aria-label="Information panel">
+          <div class="panel-header">
+            <p class="panel-eyebrow">Jaycee</p>
+            <h1>Constants</h1>
+            <p class="panel-description">
+              Live date, position, and solar timing.
+            </p>
+          </div>
+
+          <section class="panel-section" aria-labelledby="panel-calendar-title">
+            <h2 id="panel-calendar-title">Calendar</h2>
+            <dl class="info-list">
+              <div class="info-row">
+                <dt>Hebrew Date</dt>
+                <dd id="info-hebrew-date">-</dd>
+              </div>
+              <div class="info-row">
+                <dt>Normal Date</dt>
+                <dd id="info-date">-</dd>
+              </div>
+              <div class="info-row">
+                <dt>Time</dt>
+                <dd id="info-time">-</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="panel-section" aria-labelledby="panel-location-title">
+            <h2 id="panel-location-title">Location</h2>
+            <dl class="info-list">
+              <div class="info-row">
+                <dt>Latitude</dt>
+                <dd id="info-lat">-</dd>
+              </div>
+              <div class="info-row">
+                <dt>Longitude</dt>
+                <dd id="info-lon">-</dd>
+              </div>
+              <div class="info-row">
+                <dt>Looking Azimuth</dt>
+                <dd id="info-azimuth">-</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="panel-section" aria-labelledby="panel-solar-title">
+            <h2 id="panel-solar-title">Solar</h2>
+            <dl class="info-list">
+              <div class="info-row">
+                <dt>Sunrise</dt>
+                <dd id="info-sunrise">-</dd>
+              </div>
+              <div class="info-row">
+                <dt>Sunset</dt>
+                <dd id="info-sunset">-</dd>
+              </div>
+            </dl>
+          </section>
+        </aside>
+      </main>
+    </div>
+
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"
       defer

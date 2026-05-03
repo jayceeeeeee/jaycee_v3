@@ -1,3 +1,5 @@
+import { getSketchLayoutMetrics } from "../layout/sketchLayout.js";
+
 const CARDINALS = [
   { label: "N", azimuthDegrees: 0 },
   { label: "E", azimuthDegrees: 90 },
@@ -6,8 +8,7 @@ const CARDINALS = [
 ];
 
 export function drawCardinalDirections(radius, lookingAzimuthDegrees) {
-  const centerX = windowWidth / 2;
-  const centerY = windowHeight / 2;
+  const { centerX, centerY } = getSketchLayoutMetrics(width, height);
   const labelRadius = radius - 18;
   const arrowBaseRadius = radius - 9;
   const arrowTipRadius = radius - 2;

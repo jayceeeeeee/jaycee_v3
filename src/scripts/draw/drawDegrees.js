@@ -1,6 +1,7 @@
+import { getSketchLayoutMetrics } from "../layout/sketchLayout.js";
+
 export function drawDegrees(radius) {
-  const centerX = windowWidth / 2;
-  const centerY = windowHeight / 2;
+  const { centerX, centerY } = getSketchLayoutMetrics(width, height);
   const textRadius = radius - 17;
   const tickLength = 6;
   const smallTickLength = 3;
@@ -35,6 +36,6 @@ export function drawDegrees(radius) {
     noStroke();
     const x = centerX + cos(angleRad) * textRadius;
     const y = centerY + sin(angleRad) * textRadius;
-    text(`${deg}°`, x, y);
+    text(`${deg}\u00B0`, x, y);
   }
 }
