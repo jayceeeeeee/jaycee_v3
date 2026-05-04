@@ -1,6 +1,7 @@
+import { getSketchLayoutMetrics } from "../layout/sketchLayout.js";
+
 export function drawEarth(radius) {
-  const centerX = windowWidth / 2;
-  const centerY = windowHeight / 2;
+  const { centerX, centerY } = getSketchLayoutMetrics(width, height);
 
   noFill();
   stroke(100, 180, 255);
@@ -9,8 +10,7 @@ export function drawEarth(radius) {
 }
 
 export function drawEarthCenterMarker() {
-  const centerX = windowWidth / 2;
-  const centerY = windowHeight / 2;
+  const { centerX, centerY } = getSketchLayoutMetrics(width, height);
 
   fill(100, 180, 255);
   noStroke();

@@ -1,4 +1,5 @@
 import { getTerritoryGridCell, TERRITORY_GRID_SIZE } from "../state/territory.js";
+import { getSketchLayoutMetrics } from "../layout/sketchLayout.js";
 
 // Base opacity of the grid lines.
 const GRID_STROKE_ALPHA = 70;
@@ -12,8 +13,7 @@ const MASK_FADE_OUTER_RATIO = 1.22;
 const MASK_BACKGROUND = 20;
 
 export function drawTerritoryGrid(radius, centerLat, centerLon) {
-  const centerX = windowWidth / 2;
-  const centerY = windowHeight / 2;
+  const { centerX, centerY } = getSketchLayoutMetrics(width, height);
   const diameter = radius * 2;
 
   // The square grid spans the full diameter of the territory circle.
@@ -67,8 +67,7 @@ function drawGridCoordinates(startX, startY, cellSize, centerLat, centerLon) {
 // Build a radial gradient that stays transparent inside the circle
 // and gradually blends back to the sketch background outside it.
 export function applyTerritoryFadeMask(radius) {
-  const centerX = windowWidth / 2;
-  const centerY = windowHeight / 2;
+  const { centerX, centerY } = getSketchLayoutMetrics(width, height);
   const drawingGradient = drawingContext.createRadialGradient(
     centerX,
     centerY,
@@ -84,7 +83,7 @@ export function applyTerritoryFadeMask(radius) {
   push();
   noStroke();
   drawingContext.fillStyle = drawingGradient;
-  drawingContext.fillRect(0, 0, windowWidth, windowHeight);
+  drawingContext.fillRect(0, 0, width, height);
   pop();
 }
 

@@ -1,6 +1,7 @@
+import { getSketchLayoutMetrics } from "../layout/sketchLayout.js";
+
 export function drawTimeRing(innerRadius) {
-  const centerX = windowWidth / 2;
-  const centerY = windowHeight / 2;
+  const { centerX, centerY } = getSketchLayoutMetrics(width, height);
   const kabbalahMargin = 40;
   const timeMargin = 40;
   const innerTimeRadius = innerRadius + kabbalahMargin;

@@ -8,8 +8,11 @@ import { getKabbalahDateTime } from "../lib/time.js";
 /*export let humanLat = 37.5665;
 export let humanLon = 126.9780;*/
 // Japan Sapporo
-export let humanLat = 43.0620958;
-export let humanLon = 141.3543763;
+const DEFAULT_HUMAN_LAT = 43.0620958;
+const DEFAULT_HUMAN_LON = 141.3543763;
+
+export let humanLat = DEFAULT_HUMAN_LAT;
+export let humanLon = DEFAULT_HUMAN_LON;
 
 // True azimuth in degrees. 0 means facing true north.
 // For now we cannot know where we are looking, so we fix it to the north.
@@ -19,20 +22,35 @@ let lookingAzimuthDegrees = 0;
  * time state
  */
 
-// Date of now
-let dateNow = getKabbalahDateTime(new Date(), humanLat, humanLon);
-// Custom date if needed
-//let dateNow = getKabbalahDateTime(new Date(2026, 4, 1, 13, 40, 0), humanLat, humanLon);
+let selectedDate = new Date();
+let followsPresentTime = true;
+let locationQuery = "";
+let dateNow = getKabbalahDateTime(selectedDate, humanLat, humanLon);
+
+function refreshDateNow() {
+  dateNow = getKabbalahDateTime(selectedDate, humanLat, humanLon);
+}
+
+function refreshPresentTimeIfNeeded() {
+  if (!followsPresentTime) {
+    return;
+  }
+
+  selectedDate = new Date();
+  refreshDateNow();
+}
 
 export function getCurrentTimeSpace() {
-  // If we want to display in real time
-  //dateNow = getKabbalahDateTime(new Date(), humanLat, humanLon);
+  refreshPresentTimeIfNeeded();
 
   return {
     humanLat,
     humanLon,
     lookingAzimuthDegrees,
-    dateNow
+    dateNow,
+    selectedDate,
+    locationQuery,
+    followsPresentTime
   };
 }
 
@@ -44,14 +62,57 @@ export function setLookingAzimuthDegrees(value) {
   lookingAzimuthDegrees = value;
 }
 
-export function updateGeolocation() {
-  if (!navigator.geolocation) {
-    return;
+export function setSelectedDate(date, shouldFollowPresentTime = false) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+    return false;
   }
 
-  navigator.geolocation.getCurrentPosition((position) => {
-    humanLat = position.coords.latitude;
-    humanLon = position.coords.longitude;
-    dateNow = getKabbalahDateTime(new Date(), humanLat, humanLon);
+  selectedDate = date;
+  followsPresentTime = shouldFollowPresentTime;
+  refreshDateNow();
+  return true;
+}
+
+export function usePresentDateTime() {
+  return setSelectedDate(new Date(), true);
+}
+
+export function setHumanCoordinates(lat, lon) {
+  if (
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lon) ||
+    lat < -90 ||
+    lat > 90 ||
+    lon < -180 ||
+    lon > 180
+  ) {
+    return false;
+  }
+
+  humanLat = lat;
+  humanLon = lon;
+  refreshDateNow();
+  return true;
+}
+
+export function setLocationQuery(value) {
+  locationQuery = value;
+}
+
+export function updateGeolocation() {
+  if (!navigator.geolocation) {
+    return Promise.resolve(false);
+  }
+
+  return new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition((position) => {
+      humanLat = position.coords.latitude;
+      humanLon = position.coords.longitude;
+      refreshPresentTimeIfNeeded();
+      refreshDateNow();
+      resolve(true);
+    }, () => {
+      resolve(false);
+    });
   });
 }

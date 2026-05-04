@@ -1,4 +1,5 @@
 import { projectLatLonToTerritoryMap } from "../state/territory.js";
+import { getSketchLayoutMetrics } from "../layout/sketchLayout.js";
 
 // Number of samples used to approximate the full great-circle curve.
 // More samples = smoother curve, but also more computation each frame.
@@ -21,8 +22,7 @@ const WRAP_BREAK_THRESHOLD = 0.45;
 // 3. follow the corresponding great circle all around the globe
 // 4. project that great circle back onto the current square world-map view
 export function drawSunProjection(radius, dateNow, humanLat, humanLon) {
-  const centerX = windowWidth / 2;
-  const centerY = windowHeight / 2;
+  const { centerX, centerY } = getSketchLayoutMetrics(width, height);
   const diameter = radius * 2;
 
   // The Sun gives us a direction from the current location.
