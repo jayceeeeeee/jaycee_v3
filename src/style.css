@@ -150,6 +150,111 @@ body {
   word-break: break-word;
 }
 
+.control-group {
+  display: grid;
+  gap: 8px;
+}
+
+.control-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.control-inline {
+  display: grid;
+  gap: 10px;
+}
+
+.control-label {
+  font-size: 0.77rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #95a8c9;
+}
+
+.control-input {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid rgba(134, 181, 255, 0.18);
+  border-radius: 12px;
+  background: rgba(12, 19, 34, 0.92);
+  color: #f4f7ff;
+  font: inherit;
+}
+
+.control-input::placeholder {
+  color: #6d7f9f;
+}
+
+.slider-header,
+.slider-scale {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.slider-value,
+.slider-scale {
+  color: #9cb0cf;
+}
+
+.slider-value {
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.slider-scale {
+  font-size: 0.78rem;
+}
+
+.control-slider {
+  width: 100%;
+  accent-color: #8db7ff;
+}
+
+.control-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.control-button {
+  padding: 10px 14px;
+  border: 1px solid rgba(134, 181, 255, 0.24);
+  border-radius: 999px;
+  background: rgba(134, 181, 255, 0.16);
+  color: #f4f7ff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.control-button-secondary {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.control-status {
+  margin-top: 14px;
+  min-height: 1.4em;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.control-status[data-tone="muted"] {
+  color: #9cb0cf;
+}
+
+.control-status[data-tone="success"] {
+  color: #93efbe;
+}
+
+.control-status[data-tone="error"] {
+  color: #ff9f9f;
+}
+
 @media (max-width: 900px) {
   .info-panel {
     top: 0;
@@ -178,6 +283,22 @@ body {
 
   body.panel-open .panel-toggle {
     left: min(86vw - 92px, 248px);
+  }
+
+  .control-inline {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
+}
+
+@media (min-width: 901px) {
+  .control-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .control-inline {
+    grid-template-columns: 1fr auto;
+    align-items: end;
   }
 }
 

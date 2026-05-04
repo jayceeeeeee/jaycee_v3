@@ -34,34 +34,16 @@
             </p>
           </div>
 
-          <section class="panel-section" aria-labelledby="panel-calendar-title">
-            <h2 id="panel-calendar-title">Calendar</h2>
+          <section class="panel-section" aria-labelledby="panel-derived-title">
+            <h2 id="panel-derived-title">Computed</h2>
             <dl class="info-list">
-              <div class="info-row">
-                <dt>Hebrew Date</dt>
-                <dd id="info-hebrew-date">-</dd>
-              </div>
-              <div class="info-row">
-                <dt>Normal Date</dt>
-                <dd id="info-date">-</dd>
-              </div>
               <div class="info-row">
                 <dt>Time</dt>
                 <dd id="info-time">-</dd>
               </div>
-            </dl>
-          </section>
-
-          <section class="panel-section" aria-labelledby="panel-location-title">
-            <h2 id="panel-location-title">Location</h2>
-            <dl class="info-list">
               <div class="info-row">
-                <dt>Latitude</dt>
-                <dd id="info-lat">-</dd>
-              </div>
-              <div class="info-row">
-                <dt>Longitude</dt>
-                <dd id="info-lon">-</dd>
+                <dt>Hebrew Date</dt>
+                <dd id="info-hebrew-date">-</dd>
               </div>
               <div class="info-row">
                 <dt>Looking Azimuth</dt>
@@ -82,6 +64,71 @@
                 <dd id="info-sunset">-</dd>
               </div>
             </dl>
+          </section>
+
+          <section class="panel-section" aria-labelledby="panel-controls-title">
+            <h2 id="panel-controls-title">Personalize</h2>
+
+            <div class="control-group">
+              <label class="control-label" for="control-date">Base Date And Time</label>
+              <input id="control-date" class="control-input" type="datetime-local" />
+              <div class="control-actions">
+                <button id="control-date-apply" class="control-button" type="button">Apply Date</button>
+                <button id="control-date-reset" class="control-button control-button-secondary" type="button">Use Now</button>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="slider-header">
+                <label class="control-label" for="control-time-slider">Time Slider</label>
+                <span id="control-time-slider-value" class="slider-value">00:00</span>
+              </div>
+              <input
+                id="control-time-slider"
+                class="control-slider"
+                type="range"
+                min="0"
+                max="1439"
+                step="1"
+              />
+              <div class="slider-scale">
+                <span>00:00</span>
+                <span>12:00</span>
+                <span>23:59</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label class="control-label" for="control-location-query">Search Place</label>
+              <div class="control-inline">
+                <input
+                  id="control-location-query"
+                  class="control-input"
+                  type="text"
+                  placeholder="Sapporo, Tokyo, Jerusalem..."
+                />
+                <button id="control-location-search" class="control-button" type="button">Find</button>
+              </div>
+            </div>
+
+            <div class="control-grid">
+              <div class="control-group">
+                <label class="control-label" for="control-lat">Latitude</label>
+                <input id="control-lat" class="control-input" type="number" step="any" />
+              </div>
+
+              <div class="control-group">
+                <label class="control-label" for="control-lon">Longitude</label>
+                <input id="control-lon" class="control-input" type="number" step="any" />
+              </div>
+            </div>
+
+            <div class="control-actions">
+              <button id="control-coordinates-apply" class="control-button" type="button">Apply Coordinates</button>
+              <button id="control-location-now" class="control-button control-button-secondary" type="button">Use My Location</button>
+            </div>
+
+            <p id="control-status" class="control-status" data-tone="muted"></p>
           </section>
         </aside>
       </main>
