@@ -1,4 +1,5 @@
 import { getSketchLayoutMetrics } from "../layout/sketchLayout.js";
+import { getCanvasTheme } from "../state/theme.js";
 
 const CARDINALS = [
   { label: "N", azimuthDegrees: 0 },
@@ -9,6 +10,7 @@ const CARDINALS = [
 
 export function drawCardinalDirections(radius, lookingAzimuthDegrees) {
   const { centerX, centerY } = getSketchLayoutMetrics(width, height);
+  const canvasTheme = getCanvasTheme();
   const labelRadius = radius - 18;
   const arrowBaseRadius = radius - 9;
   const arrowTipRadius = radius - 2;
@@ -34,12 +36,13 @@ export function drawCardinalDirections(radius, lookingAzimuthDegrees) {
     );
 
     noStroke();
-    fill(200, 230, 255, 180);
+    fill(...canvasTheme.text, 180);
     text(cardinal.label, x, y);
   }
 }
 
 function drawCompassArrow(centerX, centerY, angleRadians, baseRadius, tipRadius, wingRadius) {
+  const canvasTheme = getCanvasTheme();
   const tipX = centerX + cos(angleRadians) * tipRadius;
   const tipY = centerY + sin(angleRadians) * tipRadius;
   const baseX = centerX + cos(angleRadians) * baseRadius;
@@ -50,12 +53,12 @@ function drawCompassArrow(centerX, centerY, angleRadians, baseRadius, tipRadius,
   const rightWingX = centerX + cos(angleRadians + wingSpreadRadians) * wingRadius;
   const rightWingY = centerY + sin(angleRadians + wingSpreadRadians) * wingRadius;
 
-  stroke(130, 210, 255, 150);
+  stroke(...canvasTheme.accentBright, 150);
   strokeWeight(0.9);
   line(baseX, baseY, tipX, tipY);
 
   noStroke();
-  fill(130, 210, 255, 130);
+  fill(...canvasTheme.accentBright, 130);
   triangle(tipX, tipY, leftWingX, leftWingY, rightWingX, rightWingY);
 }
 

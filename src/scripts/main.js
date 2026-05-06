@@ -6,6 +6,7 @@ import { drawSunProjection } from "./draw/drawSunProjection.js";
 import { applyTerritoryFadeMask, drawTerritoryGrid } from "./draw/drawTerritoryGrid.js";
 import { drawTimeRing } from "./draw/drawTimeRing.js";
 import { territoryPixels, updateRadiusTerritory } from "./state/territory.js";
+import { getCanvasTheme } from "./state/theme.js";
 import { getCurrentTimeSpace, getLookingAzimuthDegrees, updateGeolocation } from "./state/timeSpace.js";
 import { initializePanelToggle } from "./ui/panelToggle.js";
 import {
@@ -13,6 +14,7 @@ import {
   syncPersonalizationControlsFromState
 } from "./ui/personalizationControls.js";
 import { renderInfoPanel } from "./ui/renderInfoPanel.js";
+import { initializeThemeControls } from "./ui/themeControls.js";
 
 function getCanvasContainer() {
   return document.getElementById("canvas-container");
@@ -33,6 +35,7 @@ window.setup = function () {
   canvas.parent("canvas-container");
   updateRadiusTerritory(canvasSize.width, canvasSize.height);
   initializePanelToggle();
+  initializeThemeControls();
   initializePersonalizationControls();
   updateGeolocation();
 };
@@ -40,8 +43,9 @@ window.setup = function () {
 window.draw = function () {
   const timeSpace = getCurrentTimeSpace();
   const lookingAzimuthDegrees = getLookingAzimuthDegrees();
+  const canvasTheme = getCanvasTheme();
 
-  background(20);
+  background(...canvasTheme.background);
   drawTerritoryGrid(territoryPixels, timeSpace.humanLat, timeSpace.humanLon);
   drawEarth(territoryPixels);
   drawSunProjection(territoryPixels, timeSpace.dateNow, timeSpace.humanLat, timeSpace.humanLon);

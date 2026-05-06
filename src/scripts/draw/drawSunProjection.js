@@ -1,5 +1,6 @@
 import { projectLatLonToTerritoryMap } from "../state/territory.js";
 import { getSketchLayoutMetrics } from "../layout/sketchLayout.js";
+import { getCanvasTheme } from "../state/theme.js";
 
 // Number of samples used to approximate the full great-circle curve.
 // More samples = smoother curve, but also more computation each frame.
@@ -136,11 +137,13 @@ function drawGreatCircleCurve(points, centerX, centerY, diameter) {
     return;
   }
 
+  const canvasTheme = getCanvasTheme();
+
   // Split the polyline wherever the wrapped map would create a large jump.
   const segments = buildWrappedSegments(points);
 
   noFill();
-  stroke(255, 95, 95, 210);
+  stroke(...canvasTheme.sun, 210);
   strokeWeight(2);
 
   for (const segment of segments) {

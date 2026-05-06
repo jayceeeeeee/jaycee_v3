@@ -1,18 +1,20 @@
 import { sephiroth } from "../data/sephiroth.js";
 import { getSketchLayoutMetrics } from "../layout/sketchLayout.js";
+import { getCanvasTheme } from "../state/theme.js";
 
 export function drawKabbalahRing(innerRadius) {
   const { centerX, centerY } = getSketchLayoutMetrics(width, height);
+  const canvasTheme = getCanvasTheme();
   const margin = 40;
   const radius = innerRadius + margin;
   const boundaries = sephiroth.map((item) => item.deg);
 
   noFill();
-  stroke(100, 180, 255, 150);
+  stroke(...canvasTheme.accent, 150);
   strokeWeight(1);
   circle(centerX, centerY, radius * 2);
 
-  stroke(100, 180, 255, 100);
+  stroke(...canvasTheme.accent, 100);
   strokeWeight(1);
   for (const boundary of boundaries) {
     const angleRad = radians(boundary - 110);
@@ -33,11 +35,11 @@ export function drawKabbalahRing(innerRadius) {
     const ty1 = centerY + sin(angleRad) * tickInner;
     const tx2 = centerX + cos(angleRad) * tickOuter;
     const ty2 = centerY + sin(angleRad) * tickOuter;
-    stroke(130, 200, 255, 180);
+    stroke(...canvasTheme.accentBright, 180);
     strokeWeight(1);
     line(tx1, ty1, tx2, ty2);
 
-    fill(200, 220, 255);
+    fill(...canvasTheme.text);
     noStroke();
     const textRadius = innerRadius + margin * 0.55;
     const textX = centerX + cos(angleRad) * textRadius;
