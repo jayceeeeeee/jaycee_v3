@@ -17,15 +17,15 @@ const BASE_NINE_SQUARE = [
 ];
 
 const BASE_DIAMOND_CELLS = [
-  { value: 1, q: 0, r: 0 },
-  { value: 2, q: 1, r: 0 },
-  { value: 4, q: 2, r: 0 },
-  { value: 3, q: 0, r: 1 },
-  { value: 5, q: 1, r: 1 },
-  { value: 7, q: 2, r: 1 },
-  { value: 6, q: 0, r: 2 },
-  { value: 8, q: 1, r: 2 },
-  { value: 9, q: 2, r: 2 }
+  { value: 1, q: -1, r: -1 },
+  { value: 2, q: 0, r: -1 },
+  { value: 4, q: 1, r: -1 },
+  { value: 3, q: -1, r: 0 },
+  { value: 5, q: 0, r: 0 },
+  { value: 7, q: 1, r: 0 },
+  { value: 6, q: -1, r: 1 },
+  { value: 8, q: 0, r: 1 },
+  { value: 9, q: 1, r: 1 }
 ];
 
 const OVERLAY_CENTER_OFFSETS = [
@@ -59,11 +59,16 @@ const GRID_CELL_COLORS = [
 const GRID_CELL_FILL_ALPHA = 58;
 const GRID_VALUE_ALPHA = 180;
 let hasLoggedOverlaySeries = false;
-const DIAMOND_ROTATION_COUNT = 6;
-const DIAMOND_CHAIN_OFFSETS = [
+const DIAMOND_NINE_POSITION_OFFSETS = [
+  [-1, -1],
+  [0, -1],
+  [1, -1],
+  [-1, 0],
   [0, 0],
-  [1, 1],
-  [2, 2]
+  [1, 0],
+  [-1, 1],
+  [0, 1],
+  [1, 1]
 ];
 
 export function drawTerritoryGrid(radius, centerLat, centerLon) {
@@ -176,25 +181,13 @@ function logOverlaySeries() {
   }
 
   hasLoggedOverlaySeries = true;
-  const rotatedDiamondChains = buildRotatedDiamondChainOverlay(
-    DIAMOND_ROTATION_COUNT,
-    DIAMOND_CHAIN_OFFSETS
-  );
-
-  for (const angleOverlay of rotatedDiamondChains.angleOverlays) {
-    console.log(
-      `[Territory Grid] Losange diagonal 1-5-9 angle ${angleOverlay.angleIndex + 1}/${DIAMOND_ROTATION_COUNT} (sommes brutes)\n${formatHexOverlayForConsole(angleOverlay.rawSumCells)}`
-    );
-    console.log(
-      `[Territory Grid] Losange diagonal 1-5-9 angle ${angleOverlay.angleIndex + 1}/${DIAMOND_ROTATION_COUNT} (racine digitale)\n${formatHexOverlayForConsole(angleOverlay.digitalRootCells)}`
-    );
-  }
+  const diamondNinePositionOverlay = buildDiamondOffsetOverlay(DIAMOND_NINE_POSITION_OFFSETS);
 
   console.log(
-    `[Territory Grid] Total des 6 losanges diagonaux 1-5-9 (sommes brutes)\n${formatHexOverlayForConsole(rotatedDiamondChains.totalRawSumCells)}`
+    `[Territory Grid] 9 losanges 3x3 centres sur les 9 cases du motif de base (sommes brutes)\n${formatHexOverlayForConsole(diamondNinePositionOverlay.rawSumCells)}`
   );
   console.log(
-    `[Territory Grid] Total des 6 losanges diagonaux 1-5-9 (racine digitale)\n${formatHexOverlayForConsole(rotatedDiamondChains.totalDigitalRootCells)}`
+    `[Territory Grid] 9 losanges 3x3 centres sur les 9 cases du motif de base (racine digitale)\n${formatHexOverlayForConsole(diamondNinePositionOverlay.digitalRootCells)}`
   );
 }
 
@@ -202,46 +195,21 @@ function formatGridForConsole(grid) {
   return grid.map((row) => row.join(" ")).join("\n");
 }
 
-function buildRotatedDiamondChainOverlay(rotationCount, chainOffsets) {
-  const angleOverlays = [];
-  const totalRawSumByCoordinate = new Map();
+function buildDiamondOffsetOverlay(offsets) {
+  const rawSumByCoordinate = new Map();
 
-  for (let rotationIndex = 0; rotationIndex < rotationCount; rotationIndex += 1) {
-    const angleRawSumByCoordinate = new Map();
-
-    for (const [chainQ, chainR] of chainOffsets) {
-      const [rotatedChainQ, rotatedChainR] = rotateAxialVector(chainQ, chainR, rotationIndex);
-
-      for (const cell of BASE_DIAMOND_CELLS) {
-        const rotatedCell = rotateAxialCell(cell, rotationIndex);
-        const targetQ = rotatedCell.q + rotatedChainQ;
-        const targetR = rotatedCell.r + rotatedChainR;
-        const coordinateKey = `${targetQ},${targetR}`;
-
-        addValueToCoordinateMap(angleRawSumByCoordinate, coordinateKey, cell.value);
-        addValueToCoordinateMap(totalRawSumByCoordinate, coordinateKey, cell.value);
-      }
+  for (const [offsetQ, offsetR] of offsets) {
+    for (const cell of BASE_DIAMOND_CELLS) {
+      const coordinateKey = `${cell.q + offsetQ},${cell.r + offsetR}`;
+      addValueToCoordinateMap(rawSumByCoordinate, coordinateKey, cell.value);
     }
-
-    const rawSumCells = coordinateMapToCells(angleRawSumByCoordinate);
-
-    angleOverlays.push({
-      angleIndex: rotationIndex,
-      rawSumCells,
-      digitalRootCells: rawSumCells.map((cell) => ({
-        q: cell.q,
-        r: cell.r,
-        value: reduceDigitalRoot(cell.value)
-      }))
-    });
   }
 
-  const totalRawSumCells = coordinateMapToCells(totalRawSumByCoordinate);
+  const rawSumCells = coordinateMapToCells(rawSumByCoordinate);
 
   return {
-    angleOverlays,
-    totalRawSumCells,
-    totalDigitalRootCells: totalRawSumCells.map((cell) => ({
+    rawSumCells,
+    digitalRootCells: rawSumCells.map((cell) => ({
       q: cell.q,
       r: cell.r,
       value: reduceDigitalRoot(cell.value)
@@ -268,27 +236,6 @@ function coordinateMapToCells(coordinateMap) {
 
       return leftCell.q - rightCell.q;
     });
-}
-
-function rotateAxialCell(cell, turns) {
-  const [q, r] = rotateAxialVector(cell.q, cell.r, turns);
-
-  return { q, r };
-}
-
-function rotateAxialVector(q, r, turns) {
-  let rotatedQ = q;
-  let rotatedR = r;
-
-  for (let turn = 0; turn < turns; turn += 1) {
-    [rotatedQ, rotatedR] = rotateAxial60Degrees(rotatedQ, rotatedR);
-  }
-
-  return [rotatedQ, rotatedR];
-}
-
-function rotateAxial60Degrees(q, r) {
-  return [-r, q + r];
 }
 
 function formatHexOverlayForConsole(cells) {
