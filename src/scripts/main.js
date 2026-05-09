@@ -54,7 +54,7 @@ window.draw = function () {
   drawKabbalahRing(territoryPixels);
   drawTimeRing(territoryPixels);
   drawDegrees(territoryPixels);
-  drawEarthCenterMarker();
+  //drawEarthCenterMarker();
   renderInfoPanel(timeSpace.dateNow, timeSpace.humanLat, timeSpace.humanLon, lookingAzimuthDegrees);
   syncPersonalizationControlsFromState(timeSpace);
 };
