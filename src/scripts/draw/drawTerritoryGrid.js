@@ -70,6 +70,7 @@ const DIAMOND_NINE_POSITION_OFFSETS = [
   [0, 1],
   [1, 1]
 ];
+const DIAMOND_STAGE_SIZES = [5, 7, 9, 11, 13, 15, 17, 19];
 
 export function drawTerritoryGrid(radius, centerLat, centerLon) {
   const { centerX, centerY } = getSketchLayoutMetrics(width, height);
@@ -181,14 +182,12 @@ function logOverlaySeries() {
   }
 
   hasLoggedOverlaySeries = true;
-  const diamondNinePositionOverlay = buildDiamondOffsetOverlay(DIAMOND_NINE_POSITION_OFFSETS);
+  let currentCells = expandDiamondCells(BASE_DIAMOND_CELLS, DIAMOND_NINE_POSITION_OFFSETS);
 
-  console.log(
-    `[Territory Grid] 9 losanges 3x3 centres sur les 9 cases du motif de base (sommes brutes)\n${formatHexOverlayForConsole(diamondNinePositionOverlay.rawSumCells)}`
-  );
-  console.log(
-    `[Territory Grid] 9 losanges 3x3 centres sur les 9 cases du motif de base (racine digitale)\n${formatHexOverlayForConsole(diamondNinePositionOverlay.digitalRootCells)}`
-  );
+  for (const stageSize of DIAMOND_STAGE_SIZES) {
+    logDiamondStage(`${stageSize}x${stageSize}`, currentCells);
+    currentCells = expandDiamondCells(currentCells, DIAMOND_NINE_POSITION_OFFSETS);
+  }
 }
 
 function formatGridForConsole(grid) {
@@ -196,16 +195,7 @@ function formatGridForConsole(grid) {
 }
 
 function buildDiamondOffsetOverlay(offsets) {
-  const rawSumByCoordinate = new Map();
-
-  for (const [offsetQ, offsetR] of offsets) {
-    for (const cell of BASE_DIAMOND_CELLS) {
-      const coordinateKey = `${cell.q + offsetQ},${cell.r + offsetR}`;
-      addValueToCoordinateMap(rawSumByCoordinate, coordinateKey, cell.value);
-    }
-  }
-
-  const rawSumCells = coordinateMapToCells(rawSumByCoordinate);
+  const rawSumCells = expandDiamondCells(BASE_DIAMOND_CELLS, offsets);
 
   return {
     rawSumCells,
@@ -215,6 +205,34 @@ function buildDiamondOffsetOverlay(offsets) {
       value: reduceDigitalRoot(cell.value)
     }))
   };
+}
+
+function expandDiamondCells(sourceCells, offsets) {
+  const rawSumByCoordinate = new Map();
+
+  for (const [offsetQ, offsetR] of offsets) {
+    for (const cell of sourceCells) {
+      const coordinateKey = `${cell.q + offsetQ},${cell.r + offsetR}`;
+      addValueToCoordinateMap(rawSumByCoordinate, coordinateKey, cell.value);
+    }
+  }
+
+  return coordinateMapToCells(rawSumByCoordinate);
+}
+
+function logDiamondStage(stageLabel, rawSumCells) {
+  const digitalRootCells = rawSumCells.map((cell) => ({
+    q: cell.q,
+    r: cell.r,
+    value: reduceDigitalRoot(cell.value)
+  }));
+
+  console.log(
+    `[Territory Grid] Losange ${stageLabel} (sommes brutes)\n${formatHexOverlayForConsole(rawSumCells)}`
+  );
+  console.log(
+    `[Territory Grid] Losange ${stageLabel} (racine digitale)\n${formatHexOverlayForConsole(digitalRootCells)}`
+  );
 }
 
 function addValueToCoordinateMap(coordinateMap, coordinateKey, value) {
