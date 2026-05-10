@@ -339,6 +339,16 @@ body[data-theme="light"] .theme-toggle-thumb {
   margin-top: 12px;
 }
 
+.hex-editor-option-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hex-editor-option {
+  min-width: 84px;
+}
+
 .control-button {
   padding: 10px 14px;
   border: 1px solid var(--button-border);

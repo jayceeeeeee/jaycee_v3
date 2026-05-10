@@ -1,6 +1,11 @@
 import { drawCardinalDirections } from "./draw/drawCardinalDirections.js";
 import { drawDegrees } from "./draw/drawDegrees.js";
 import { drawEarth, drawEarthCenterMarker } from "./draw/drawEarth.js";
+import {
+  drawHexShapeEditor,
+  initializeHexShapeEditor,
+  placeSelectedHexShapeAtPointer
+} from "./draw/drawHexShapeEditor.js";
 import { drawKabbalahRing } from "./draw/drawKabbalahRing.js";
 import { drawSunProjection } from "./draw/drawSunProjection.js";
 import { applyTerritoryFadeMask, drawTerritoryGrid } from "./draw/drawTerritoryGrid.js";
@@ -37,6 +42,7 @@ window.setup = function () {
   initializePanelToggle();
   initializeThemeControls();
   initializePersonalizationControls();
+  initializeHexShapeEditor();
   updateGeolocation();
 };
 
@@ -46,14 +52,15 @@ window.draw = function () {
   const canvasTheme = getCanvasTheme();
 
   background(...canvasTheme.background);
-  drawTerritoryGrid(territoryPixels, timeSpace.humanLat, timeSpace.humanLon);
-  drawEarth(territoryPixels);
-  drawSunProjection(territoryPixels, timeSpace.dateNow, timeSpace.humanLat, timeSpace.humanLon);
-  applyTerritoryFadeMask(territoryPixels);
-  drawCardinalDirections(territoryPixels, lookingAzimuthDegrees);
-  drawKabbalahRing(territoryPixels);
-  drawTimeRing(territoryPixels);
-  drawDegrees(territoryPixels);
+  drawHexShapeEditor(territoryPixels);
+  // drawTerritoryGrid(territoryPixels, timeSpace.humanLat, timeSpace.humanLon);
+  // drawEarth(territoryPixels);
+  // drawSunProjection(territoryPixels, timeSpace.dateNow, timeSpace.humanLat, timeSpace.humanLon);
+  // applyTerritoryFadeMask(territoryPixels);
+  // drawCardinalDirections(territoryPixels, lookingAzimuthDegrees);
+  // drawKabbalahRing(territoryPixels);
+  // drawTimeRing(territoryPixels);
+  // drawDegrees(territoryPixels);
   //drawEarthCenterMarker();
   renderInfoPanel(timeSpace.dateNow, timeSpace.humanLat, timeSpace.humanLon, lookingAzimuthDegrees);
   syncPersonalizationControlsFromState(timeSpace);
@@ -63,4 +70,9 @@ window.windowResized = function () {
   const canvasSize = getCanvasSize();
   resizeCanvas(canvasSize.width, canvasSize.height);
   updateRadiusTerritory(canvasSize.width, canvasSize.height);
+};
+
+window.mousePressed = function () {
+  placeSelectedHexShapeAtPointer();
+  return false;
 };
