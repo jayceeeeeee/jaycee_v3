@@ -1,38 +1,130 @@
 import { getSketchLayoutMetrics } from "../layout/sketchLayout.js";
 import { getCanvasTheme } from "../state/theme.js";
 
-const HEX_GRID_RADIUS = 16;
+const SQUARE_GRID_RADIUS = 16;
 const GRID_STROKE_ALPHA = 80;
 const GRID_FILL_ALPHA = 14;
 const ACTIVE_FILL_ALPHA = 58;
 const PREVIEW_FILL_ALPHA = 26;
 const ACTIVE_TEXT_ALPHA = 210;
 const GUIDE_TEXT_ALPHA = 160;
-const HEX_EDITOR_RADIUS_SCALE = 1.58;
+const SQUARE_EDITOR_RADIUS_SCALE = 1.58;
+const ROTATION_STEP_DEGREES = 90;
+const ROTATION_COUNT = 4;
+const SHAPE_LAYOUTS = [
+  { id: "diamond", label: "Losange" },
+  { id: "square", label: "Carre" },
+  { id: "square-spaced", label: "Carre 9x9" }
+];
+
+const STRAIGHT_NINE_CELLS = [
+  { x: -1, y: -1, value: 1 },
+  { x: 0, y: -1, value: 2 },
+  { x: 1, y: -1, value: 4 },
+  { x: -1, y: 0, value: 3 },
+  { x: 0, y: 0, value: 5 },
+  { x: 1, y: 0, value: 7 },
+  { x: -1, y: 1, value: 6 },
+  { x: 0, y: 1, value: 8 },
+  { x: 1, y: 1, value: 9 }
+];
+
+const SQUARE_123_456_789_CELLS = buildSquareCellsFromRows([
+  [1, 2, 3],
+  [4, 5, 6],
+  [7, 8, 9]
+]);
+
+const SQUARE_124_357_689_CELLS = buildSquareCellsFromRows([
+  [1, 2, 4],
+  [3, 5, 7],
+  [6, 8, 9]
+]);
+
+const SQUARE_461_597_238_CELLS = buildSquareCellsFromRows([
+  [4, 6, 1],
+  [5, 9, 7],
+  [2, 3, 8]
+]);
+
+const SQUARE_465_197_238_CELLS = buildSquareCellsFromRows([
+  [4, 6, 5],
+  [1, 9, 7],
+  [2, 3, 8]
+]);
+
+const SQUARE_461_592_738_CELLS = buildSquareCellsFromRows([
+  [4, 6, 1],
+  [5, 9, 2],
+  [7, 3, 8]
+]);
+
+const SQUARE_465_192_738_CELLS = buildSquareCellsFromRows([
+  [4, 6, 5],
+  [1, 9, 2],
+  [7, 3, 8]
+]);
 
 const DIAMOND_NINE_SHAPE = {
   id: "diamond-nine",
   name: "Losange 9",
-  anchor: { q: 0, r: 0 },
-  // Shape centered on 5 and extending horizontally.
+  anchor: { x: 0, y: 0 },
   cells: [
-    { q: -2, r: 1, value: 1 },
-    { q: -1, r: 0, value: 2 },
-    { q: -1, r: 1, value: 3 },
-    { q: 0, r: -1, value: 4 },
-    { q: 0, r: 0, value: 5 },
-    { q: 0, r: 1, value: 6 },
-    { q: 1, r: -1, value: 7 },
-    { q: 1, r: 0, value: 8 },
-    { q: 2, r: -1, value: 9 }
-  ]
+    { x: 0, y: -2, value: 4 },
+    { x: -1, y: -1, value: 2 },
+    { x: 1, y: -1, value: 7 },
+    { x: -2, y: 0, value: 1 },
+    { x: 0, y: 0, value: 5 },
+    { x: 2, y: 0, value: 9 },
+    { x: -1, y: 1, value: 3 },
+    { x: 1, y: 1, value: 8 },
+    { x: 0, y: 2, value: 6 }
+  ],
+  squareCells: STRAIGHT_NINE_CELLS,
+  spacedSquareCells: addOneEmptyCellBetweenSquareCells(STRAIGHT_NINE_CELLS)
 };
 
-const SIX_DIAMOND_STAR_SHAPE = buildRotatedDigitalRootShape(
-  "six-diamond-star",
-  "Etoile 6x",
+const SQUARE_461_597_238_SHAPE = buildShapeFromSquareCells(
+  "square-461-597-238",
+  "Carre 461 BJS",
+  SQUARE_461_597_238_CELLS
+);
+
+const SQUARE_123_456_789_SHAPE = buildShapeFromSquareCells(
+  "square-123-456-789",
+  "Carre 123",
+  SQUARE_123_456_789_CELLS
+);
+
+const SQUARE_124_357_689_SHAPE = buildShapeFromSquareCells(
+  "square-124-357-689",
+  "Carre 124",
+  SQUARE_124_357_689_CELLS
+);
+
+const SQUARE_465_197_238_SHAPE = buildShapeFromSquareCells(
+  "square-465-197-238",
+  "Carre 465",
+  SQUARE_465_197_238_CELLS
+);
+
+const SQUARE_461_592_738_SHAPE = buildShapeFromSquareCells(
+  "square-461-592-738",
+  "Carre 461",
+  SQUARE_461_592_738_CELLS
+);
+
+const SQUARE_465_192_738_SHAPE = buildShapeFromSquareCells(
+  "square-465-192-738",
+  "Carre 465 LS",
+  SQUARE_465_192_738_CELLS
+);
+
+const FOUR_DIAMOND_STAR_SHAPE = buildRotatedDigitalRootShape(
+  "four-diamond-star",
+  "Etoile 4x",
   DIAMOND_NINE_SHAPE.cells,
-  { q: -2, r: 1 }
+  { x: -2, y: 0 }
 );
 
 const BIG_DIAMOND_FIVE_SHAPE = buildDiamondRowsShape(
@@ -55,7 +147,7 @@ const BIG_DIAMOND_FIVE_NINE_OVERLAY_SHAPE = buildOverlayShapeFromAnchors(
   "big-diamond-5-center",
   "Grand losange 5x5 + centre",
   DIAMOND_NINE_SHAPE.cells,
-  DIAMOND_NINE_SHAPE.cells.map((cell) => ({ q: cell.q, r: cell.r }))
+  DIAMOND_NINE_SHAPE.cells.map((cell) => ({ x: cell.x, y: cell.y }))
 );
 
 const BIG_DIAMOND_SEVEN_SHAPE = buildDiamondRowsShape(
@@ -80,7 +172,13 @@ const BIG_DIAMOND_SEVEN_SHAPE = buildDiamondRowsShape(
 
 const SHAPE_LIBRARY = [
   DIAMOND_NINE_SHAPE,
-  SIX_DIAMOND_STAR_SHAPE,
+  SQUARE_123_456_789_SHAPE,
+  SQUARE_124_357_689_SHAPE,
+  SQUARE_461_597_238_SHAPE,
+  SQUARE_465_197_238_SHAPE,
+  SQUARE_461_592_738_SHAPE,
+  SQUARE_465_192_738_SHAPE,
+  FOUR_DIAMOND_STAR_SHAPE,
   BIG_DIAMOND_FIVE_SHAPE,
   BIG_DIAMOND_FIVE_NINE_OVERLAY_SHAPE,
   BIG_DIAMOND_SEVEN_SHAPE
@@ -88,7 +186,11 @@ const SHAPE_LIBRARY = [
 
 const editorState = {
   selectedShapeId: SHAPE_LIBRARY[0].id,
+  selectedLayout: "square",
   selectedRotation: 0,
+  invertX: false,
+  invertY: false,
+  invertDiagonal: false,
   placedShapes: [],
   contextMenuDisabled: false
 };
@@ -106,24 +208,26 @@ export function drawHexShapeEditor(radius) {
   const { centerX, centerY } = getSketchLayoutMetrics(width, height);
   const canvasTheme = getCanvasTheme();
   const editorRadius = getEditorRadius(radius);
-  const hexSize = getHexCellSize(editorRadius);
-  const hexCells = getHexGridCells(HEX_GRID_RADIUS);
+  const cellSize = getSquareCellSize(editorRadius);
+  const squareCells = getSquareGridCells(SQUARE_GRID_RADIUS);
   const overlay = buildPlacedShapesOverlay();
   const overlayMap = new Map(
-    overlay.digitalRootCells.map((cell) => [getCellKey(cell.q, cell.r), cell.value])
+    overlay.digitalRootCells.map((cell) => [getCellKey(cell.x, cell.y), cell.value])
   );
-  const hoveredCell = getHoveredHexCell(editorRadius);
-  const previewCells = hoveredCell ? buildPreviewCells(hoveredCell.q, hoveredCell.r) : [];
-  const previewMap = new Map(previewCells.map((cell) => [getCellKey(cell.q, cell.r), cell.value]));
+  const hoveredCell = getHoveredSquareCell(editorRadius);
+  const previewCells = hoveredCell ? buildPreviewCells(hoveredCell.x, hoveredCell.y) : [];
+  const previewMap = new Map(previewCells.map((cell) => [getCellKey(cell.x, cell.y), cell.value]));
 
+  push();
   textFont("monospace");
   textAlign(CENTER, CENTER);
+  rectMode(CENTER);
   stroke(...canvasTheme.accent, GRID_STROKE_ALPHA);
   strokeWeight(1);
 
-  for (const cell of hexCells) {
-    const { x, y } = axialToPixel(cell.q, cell.r, hexSize, centerX, centerY);
-    const cellKey = getCellKey(cell.q, cell.r);
+  for (const cell of squareCells) {
+    const { x, y } = squareToPixel(cell.x, cell.y, cellSize, centerX, centerY);
+    const cellKey = getCellKey(cell.x, cell.y);
     const overlayValue = overlayMap.get(cellKey);
     const previewValue = previewMap.get(cellKey);
 
@@ -135,7 +239,7 @@ export function drawHexShapeEditor(radius) {
       fill(...canvasTheme.accent, GRID_FILL_ALPHA);
     }
 
-    drawHexagon(x, y, hexSize);
+    drawSquareCell(x, y, cellSize);
 
     if (!overlayValue && !previewValue) {
       continue;
@@ -143,16 +247,18 @@ export function drawHexShapeEditor(radius) {
 
     noStroke();
     fill(...canvasTheme.textStrong, ACTIVE_TEXT_ALPHA);
-    textSize(getHexTextSize(hexSize));
+    textSize(getSquareTextSize(cellSize));
     text(String(overlayValue ?? previewValue), x, y + 1);
     stroke(...canvasTheme.accent, GRID_STROKE_ALPHA);
   }
+
+  pop();
 
   drawEditorHud(canvasTheme);
 }
 
 export function placeSelectedHexShapeAtPointer() {
-  const hoveredCell = getHoveredHexCell(getEditorRadiusFromViewport());
+  const hoveredCell = getHoveredSquareCell(getEditorRadiusFromViewport());
 
   if (!hoveredCell) {
     return;
@@ -160,9 +266,13 @@ export function placeSelectedHexShapeAtPointer() {
 
   editorState.placedShapes.push({
     shapeId: editorState.selectedShapeId,
+    layout: editorState.selectedLayout,
     rotation: editorState.selectedRotation,
-    anchorQ: hoveredCell.q,
-    anchorR: hoveredCell.r
+    invertX: editorState.invertX,
+    invertY: editorState.invertY,
+    invertDiagonal: editorState.invertDiagonal,
+    anchorX: hoveredCell.x,
+    anchorY: hoveredCell.y
   });
 
   syncEditorStatus();
@@ -182,7 +292,7 @@ function ensureEditorControls() {
   section.setAttribute("aria-labelledby", "hex-editor-title");
 
   section.innerHTML = `
-    <h2 id="hex-editor-title">Hex Editor</h2>
+    <h2 id="hex-editor-title">Square Editor</h2>
     <div class="control-group">
       <span class="control-label">Shapes</span>
       <div id="hex-shape-list" class="hex-editor-option-list"></div>
@@ -190,6 +300,27 @@ function ensureEditorControls() {
     <div class="control-group">
       <span class="control-label">Rotation</span>
       <div id="hex-rotation-list" class="hex-editor-option-list"></div>
+    </div>
+    <div class="control-group">
+      <span class="control-label">Layout</span>
+      <div id="hex-layout-list" class="hex-editor-option-list"></div>
+    </div>
+    <div class="control-group">
+      <span class="control-label">Invert</span>
+      <div class="hex-editor-option-list">
+        <label class="hex-editor-toggle">
+          <input id="hex-editor-invert-x" type="checkbox" />
+          <span>X</span>
+        </label>
+        <label class="hex-editor-toggle">
+          <input id="hex-editor-invert-y" type="checkbox" />
+          <span>Y</span>
+        </label>
+        <label class="hex-editor-toggle">
+          <input id="hex-editor-invert-diagonal" type="checkbox" />
+          <span>Diagonal</span>
+        </label>
+      </div>
     </div>
     <div class="control-actions">
       <button id="hex-editor-undo" class="control-button control-button-secondary" type="button">Undo</button>
@@ -202,6 +333,7 @@ function ensureEditorControls() {
 
   renderShapeButtons();
   renderRotationButtons();
+  renderLayoutButtons();
   wireEditorButtons();
   syncEditorStatus();
 }
@@ -237,6 +369,37 @@ function renderShapeButtons() {
   }
 }
 
+function renderLayoutButtons() {
+  const layoutList = document.getElementById("hex-layout-list");
+
+  if (!layoutList) {
+    return;
+  }
+
+  layoutList.innerHTML = SHAPE_LAYOUTS.map((layout) => {
+    const isSelected = layout.id === editorState.selectedLayout;
+
+    return `
+      <button
+        class="control-button ${isSelected ? "" : "control-button-secondary"} hex-editor-option"
+        type="button"
+        data-layout-id="${layout.id}"
+        aria-pressed="${isSelected}"
+      >
+        ${layout.label}
+      </button>
+    `;
+  }).join("");
+
+  for (const button of layoutList.querySelectorAll("[data-layout-id]")) {
+    button.addEventListener("click", () => {
+      editorState.selectedLayout = button.dataset.layoutId;
+      renderLayoutButtons();
+      syncEditorStatus();
+    });
+  }
+}
+
 function renderRotationButtons() {
   const rotationList = document.getElementById("hex-rotation-list");
 
@@ -244,7 +407,7 @@ function renderRotationButtons() {
     return;
   }
 
-  rotationList.innerHTML = Array.from({ length: 6 }, (_, index) => {
+  rotationList.innerHTML = Array.from({ length: ROTATION_COUNT }, (_, index) => {
     const isSelected = index === editorState.selectedRotation;
 
     return `
@@ -254,7 +417,7 @@ function renderRotationButtons() {
         data-rotation-index="${index}"
         aria-pressed="${isSelected}"
       >
-        ${index * 60}°
+        ${index * ROTATION_STEP_DEGREES}deg
       </button>
     `;
   }).join("");
@@ -269,6 +432,21 @@ function renderRotationButtons() {
 }
 
 function wireEditorButtons() {
+  document.getElementById("hex-editor-invert-x")?.addEventListener("change", (event) => {
+    editorState.invertX = event.target.checked;
+    syncEditorStatus();
+  });
+
+  document.getElementById("hex-editor-invert-y")?.addEventListener("change", (event) => {
+    editorState.invertY = event.target.checked;
+    syncEditorStatus();
+  });
+
+  document.getElementById("hex-editor-invert-diagonal")?.addEventListener("change", (event) => {
+    editorState.invertDiagonal = event.target.checked;
+    syncEditorStatus();
+  });
+
   document.getElementById("hex-editor-undo")?.addEventListener("click", () => {
     editorState.placedShapes.pop();
     syncEditorStatus();
@@ -287,7 +465,7 @@ function buildPlacedShapesOverlay() {
     const resolvedCells = resolvePlacedShapeCells(placedShape);
 
     for (const cell of resolvedCells) {
-      addValueToCoordinateMap(rawSumByCoordinate, getCellKey(cell.q, cell.r), cell.value);
+      addValueToCoordinateMap(rawSumByCoordinate, getCellKey(cell.x, cell.y), cell.value);
     }
   }
 
@@ -296,42 +474,75 @@ function buildPlacedShapesOverlay() {
   return {
     rawSumCells,
     digitalRootCells: rawSumCells.map((cell) => ({
-      q: cell.q,
-      r: cell.r,
+      x: cell.x,
+      y: cell.y,
       value: reduceDigitalRoot(cell.value)
     }))
   };
 }
 
-function buildRotatedDigitalRootShape(id, name, sourceCells, pivot) {
+function buildRotatedDigitalRootShape(id, name, diamondSourceCells, pivot) {
+  const cells = buildRotatedDigitalRootCells(diamondSourceCells, pivot);
+  const squareCells = normalizeShapeCells(diamondToSquareCells(cells));
+  const spacedSquareCells = addOneEmptyCellBetweenSquareCells(squareCells);
+
+  return {
+    id,
+    name,
+    anchor: { x: 0, y: 0 },
+    cells,
+    squareCells,
+    spacedSquareCells
+  };
+}
+
+function buildShapeFromSquareCells(id, name, squareCells) {
+  return {
+    id,
+    name,
+    anchor: { x: 0, y: 0 },
+    cells: squareToDiamondCells(squareCells),
+    squareCells,
+    spacedSquareCells: addOneEmptyCellBetweenSquareCells(squareCells)
+  };
+}
+
+function buildRotatedDigitalRootCells(sourceCells, pivot) {
   const rawSumByCoordinate = new Map();
 
-  for (let rotationIndex = 0; rotationIndex < 6; rotationIndex += 1) {
+  for (let rotationIndex = 0; rotationIndex < ROTATION_COUNT; rotationIndex += 1) {
     for (const cell of sourceCells) {
-      const translatedQ = cell.q - pivot.q;
-      const translatedR = cell.r - pivot.r;
-      const rotatedCell = rotateAxialCell(translatedQ, translatedR, rotationIndex);
+      const translatedX = cell.x - pivot.x;
+      const translatedY = cell.y - pivot.y;
+      const rotatedCell = rotateSquareCell(translatedX, translatedY, rotationIndex);
 
       addValueToCoordinateMap(
         rawSumByCoordinate,
-        getCellKey(rotatedCell.q, rotatedCell.r),
+        getCellKey(rotatedCell.x, rotatedCell.y),
         cell.value
       );
     }
   }
 
-  const cells = coordinateMapToCells(rawSumByCoordinate).map((cell) => ({
-    q: cell.q,
-    r: cell.r,
+  return coordinateMapToCells(rawSumByCoordinate).map((cell) => ({
+    x: cell.x,
+    y: cell.y,
     value: reduceDigitalRoot(cell.value)
   }));
+}
 
-  return {
-    id,
-    name,
-    anchor: { q: 0, r: 0 },
-    cells
-  };
+function buildSquareCellsFromRows(rows) {
+  const middleRowIndex = Math.floor(rows.length / 2);
+
+  return rows.flatMap((rowValues, rowIndex) => {
+    const middleColumnIndex = Math.floor(rowValues.length / 2);
+
+    return rowValues.map((value, columnIndex) => ({
+      x: columnIndex - middleColumnIndex,
+      y: rowIndex - middleRowIndex,
+      value
+    }));
+  });
 }
 
 function buildDiamondRowsShape(id, name, rows) {
@@ -340,66 +551,130 @@ function buildDiamondRowsShape(id, name, rows) {
 
   for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
     const rowValues = rows[rowIndex];
-    const distanceFromMiddle = rowIndex - middleRowIndex;
-    const qStart = -rowValues.length + 1;
-    const projectedY = distanceFromMiddle / 2;
+    const y = rowIndex - middleRowIndex;
+    const xStart = -rowValues.length + 1;
 
     for (let columnIndex = 0; columnIndex < rowValues.length; columnIndex += 1) {
-      const q = qStart + columnIndex * 2;
-      const r = projectedY - q / 2;
-
       cells.push({
-        q,
-        r,
+        x: xStart + columnIndex * 2,
+        y,
         value: rowValues[columnIndex]
       });
     }
   }
 
+  const squareCells = normalizeShapeCells(diamondToSquareCells(cells));
+
   return {
     id,
     name,
-    anchor: { q: 0, r: 0 },
-    cells
+    anchor: { x: 0, y: 0 },
+    cells,
+    squareCells,
+    spacedSquareCells: addOneEmptyCellBetweenSquareCells(squareCells)
   };
 }
 
-function buildOverlayShapeFromAnchors(id, name, sourceCells, anchors) {
+function buildOverlayShapeFromAnchors(id, name, diamondSourceCells, diamondAnchors) {
+  const cells = buildOverlayCellsFromAnchors(diamondSourceCells, diamondAnchors);
+  const squareCells = normalizeShapeCells(diamondToSquareCells(cells));
+  const spacedSquareCells = addOneEmptyCellBetweenSquareCells(squareCells);
+
+  return {
+    id,
+    name,
+    anchor: { x: 0, y: 0 },
+    cells,
+    squareCells,
+    spacedSquareCells
+  };
+}
+
+function buildOverlayCellsFromAnchors(sourceCells, anchors) {
   const rawSumByCoordinate = new Map();
 
   for (const anchor of anchors) {
     for (const cell of sourceCells) {
-      const centeredQ = cell.q - DIAMOND_NINE_SHAPE.anchor.q;
-      const centeredR = cell.r - DIAMOND_NINE_SHAPE.anchor.r;
-
       addValueToCoordinateMap(
         rawSumByCoordinate,
-        getCellKey(centeredQ + anchor.q, centeredR + anchor.r),
+        getCellKey(cell.x + anchor.x, cell.y + anchor.y),
         cell.value
       );
     }
   }
 
-  const cells = coordinateMapToCells(rawSumByCoordinate).map((cell) => ({
-    q: cell.q,
-    r: cell.r,
+  return coordinateMapToCells(rawSumByCoordinate).map((cell) => ({
+    x: cell.x,
+    y: cell.y,
     value: reduceDigitalRoot(cell.value)
   }));
-
-  return {
-    id,
-    name,
-    anchor: { q: 0, r: 0 },
-    cells
-  };
 }
 
-function buildPreviewCells(anchorQ, anchorR) {
+function diamondToSquareCells(cells) {
+  return cells.map((cell) => ({
+    x: (cell.x - cell.y) / 2,
+    y: (cell.x + cell.y) / 2,
+    value: cell.value
+  }));
+}
+
+function squareToDiamondCells(cells) {
+  return cells.map((cell) => ({
+    x: cell.x + cell.y,
+    y: cell.y - cell.x,
+    value: cell.value
+  }));
+}
+
+function normalizeShapeCells(cells) {
+  const minX = Math.min(...cells.map((cell) => cell.x));
+  const minY = Math.min(...cells.map((cell) => cell.y));
+  const maxX = Math.max(...cells.map((cell) => cell.x));
+  const maxY = Math.max(...cells.map((cell) => cell.y));
+  const offsetX = Math.round((minX + maxX) / 2);
+  const offsetY = Math.round((minY + maxY) / 2);
+
+  return cells.map((cell) => ({
+    x: cell.x - offsetX,
+    y: cell.y - offsetY,
+    value: cell.value
+  }));
+}
+
+function addOneEmptyCellBetweenSquareCells(cells) {
+  const xMap = buildOneGapAxisMap(cells.map((cell) => cell.x));
+  const yMap = buildOneGapAxisMap(cells.map((cell) => cell.y));
+
+  return cells.map((cell) => ({
+    x: xMap.get(cell.x),
+    y: yMap.get(cell.y),
+    value: cell.value
+  }));
+}
+
+function buildOneGapAxisMap(values) {
+  const uniqueValues = Array.from(new Set(values)).sort((left, right) => left - right);
+
+  if (uniqueValues.length === 1) {
+    return new Map([[uniqueValues[0], 0]]);
+  }
+
+  return new Map(uniqueValues.map((value, index) => [
+    value,
+    (index * 2) - (uniqueValues.length - 1)
+  ]));
+}
+
+function buildPreviewCells(anchorX, anchorY) {
   return resolvePlacedShapeCells({
     shapeId: editorState.selectedShapeId,
+    layout: editorState.selectedLayout,
     rotation: editorState.selectedRotation,
-    anchorQ,
-    anchorR
+    invertX: editorState.invertX,
+    invertY: editorState.invertY,
+    invertDiagonal: editorState.invertDiagonal,
+    anchorX,
+    anchorY
   });
 }
 
@@ -410,42 +685,66 @@ function resolvePlacedShapeCells(placedShape) {
     return [];
   }
 
-  return shape.cells.map((cell) => {
-    const centeredQ = cell.q - shape.anchor.q;
-    const centeredR = cell.r - shape.anchor.r;
-    const rotatedCell = rotateAxialCell(centeredQ, centeredR, placedShape.rotation);
+  const shapeCells = getShapeCellsForLayout(shape, placedShape.layout);
+
+  return shapeCells.map((cell) => {
+    const centeredX = cell.x - shape.anchor.x;
+    const centeredY = cell.y - shape.anchor.y;
+    const diagonallyMirroredCell = placedShape.invertDiagonal
+      ? { x: centeredY, y: centeredX }
+      : { x: centeredX, y: centeredY };
+    const flippedCell = {
+      x: placedShape.invertX ? -diagonallyMirroredCell.x : diagonallyMirroredCell.x,
+      y: placedShape.invertY ? -diagonallyMirroredCell.y : diagonallyMirroredCell.y
+    };
+    const rotatedCell = rotateSquareCell(flippedCell.x, flippedCell.y, placedShape.rotation);
 
     return {
-      q: rotatedCell.q + placedShape.anchorQ,
-      r: rotatedCell.r + placedShape.anchorR,
+      x: rotatedCell.x + placedShape.anchorX,
+      y: rotatedCell.y + placedShape.anchorY,
       value: cell.value
     };
   });
 }
 
-function getHoveredHexCell(radius) {
-  const { centerX, centerY } = getSketchLayoutMetrics(width, height);
-  const hexSize = getHexCellSize(radius);
-  let closestCell = null;
-  let closestDistance = Number.POSITIVE_INFINITY;
-
-  for (const cell of getHexGridCells(HEX_GRID_RADIUS)) {
-    const pixelPosition = axialToPixel(cell.q, cell.r, hexSize, centerX, centerY);
-    const distance = dist(mouseX, mouseY, pixelPosition.x, pixelPosition.y);
-
-    if (distance > hexSize || distance >= closestDistance) {
-      continue;
-    }
-
-    closestCell = cell;
-    closestDistance = distance;
+function getShapeCellsForLayout(shape, layout) {
+  if (layout === "square-spaced" && shape.spacedSquareCells) {
+    return shape.spacedSquareCells;
   }
 
-  return closestCell;
+  if (layout === "square" && shape.squareCells) {
+    return shape.squareCells;
+  }
+
+  return shape.cells;
+}
+
+function getHoveredSquareCell(radius) {
+  const { centerX, centerY } = getSketchLayoutMetrics(width, height);
+  const cellSize = getSquareCellSize(radius);
+  const gridWidth = (SQUARE_GRID_RADIUS * 2 + 1) * cellSize;
+  const left = centerX - gridWidth / 2;
+  const top = centerY - gridWidth / 2;
+  const column = Math.floor((mouseX - left) / cellSize);
+  const row = Math.floor((mouseY - top) / cellSize);
+
+  if (
+    column < 0 ||
+    row < 0 ||
+    column > SQUARE_GRID_RADIUS * 2 ||
+    row > SQUARE_GRID_RADIUS * 2
+  ) {
+    return null;
+  }
+
+  return {
+    x: column - SQUARE_GRID_RADIUS,
+    y: row - SQUARE_GRID_RADIUS
+  };
 }
 
 function getEditorRadius(radius) {
-  return radius * HEX_EDITOR_RADIUS_SCALE;
+  return radius * SQUARE_EDITOR_RADIUS_SCALE;
 }
 
 function getEditorRadiusFromViewport() {
@@ -455,9 +754,11 @@ function getEditorRadiusFromViewport() {
 
 function drawEditorHud(canvasTheme) {
   const selectedShape = SHAPE_LIBRARY.find((shape) => shape.id === editorState.selectedShapeId);
+  const selectedLayout = SHAPE_LAYOUTS.find((layout) => layout.id === editorState.selectedLayout);
   const hudLines = [
-    `Click: place shape`,
-    `${selectedShape?.name ?? "Shape"} at ${editorState.selectedRotation * 60}°`,
+    "Click: place shape",
+    `${selectedShape?.name ?? "Shape"} at ${editorState.selectedRotation * ROTATION_STEP_DEGREES}deg`,
+    `${selectedLayout?.label ?? "Layout"} invert X:${formatToggleState(editorState.invertX)} Y:${formatToggleState(editorState.invertY)} D:${formatToggleState(editorState.invertDiagonal)}`,
     `${editorState.placedShapes.length} placed`
   ];
 
@@ -480,6 +781,7 @@ function drawEditorHud(canvasTheme) {
 function syncEditorStatus() {
   const status = document.getElementById("hex-editor-status");
   const selectedShape = SHAPE_LIBRARY.find((shape) => shape.id === editorState.selectedShapeId);
+  const selectedLayout = SHAPE_LAYOUTS.find((layout) => layout.id === editorState.selectedLayout);
 
   if (!status) {
     return;
@@ -487,69 +789,52 @@ function syncEditorStatus() {
 
   status.dataset.tone = "muted";
   status.textContent =
-    `${selectedShape?.name ?? "Shape"} · rotation ${editorState.selectedRotation * 60}° · ${editorState.placedShapes.length} formes`;
+    `${selectedShape?.name ?? "Shape"} - ${selectedLayout?.label ?? "Layout"} - rotation ${editorState.selectedRotation * ROTATION_STEP_DEGREES}deg - invert X:${formatToggleState(editorState.invertX)} Y:${formatToggleState(editorState.invertY)} D:${formatToggleState(editorState.invertDiagonal)} - ${editorState.placedShapes.length} formes`;
 }
 
-function getHexGridCells(gridRadius) {
+function getSquareGridCells(gridRadius) {
   const cells = [];
 
-  for (let q = -gridRadius; q <= gridRadius; q += 1) {
-    const rMin = Math.max(-gridRadius, -q - gridRadius);
-    const rMax = Math.min(gridRadius, -q + gridRadius);
-
-    for (let r = rMin; r <= rMax; r += 1) {
-      cells.push({ q, r });
+  for (let y = -gridRadius; y <= gridRadius; y += 1) {
+    for (let x = -gridRadius; x <= gridRadius; x += 1) {
+      cells.push({ x, y });
     }
   }
 
   return cells;
 }
 
-function getHexCellSize(radius) {
-  return radius / (HEX_GRID_RADIUS * 1.72);
+function getSquareCellSize(radius) {
+  return (radius * 2) / (SQUARE_GRID_RADIUS * 2 + 1);
 }
 
-function getHexTextSize(hexSize) {
-  return Math.max(11, hexSize * 0.82);
+function getSquareTextSize(cellSize) {
+  return Math.max(11, cellSize * 0.48);
 }
 
-function axialToPixel(q, r, hexSize, centerX, centerY) {
+function squareToPixel(cellX, cellY, cellSize, centerX, centerY) {
   return {
-    x: centerX + hexSize * 1.5 * q,
-    y: centerY + hexSize * Math.sqrt(3) * (r + q / 2)
+    x: centerX + cellX * cellSize,
+    y: centerY + cellY * cellSize
   };
 }
 
-function drawHexagon(centerX, centerY, hexSize) {
-  beginShape();
-
-  for (let corner = 0; corner < 6; corner += 1) {
-    const angle = corner * (PI / 3);
-    vertex(
-      centerX + Math.cos(angle) * hexSize,
-      centerY + Math.sin(angle) * hexSize
-    );
-  }
-
-  endShape(CLOSE);
+function drawSquareCell(centerX, centerY, cellSize) {
+  rect(centerX, centerY, cellSize, cellSize);
 }
 
-function rotateAxialCell(q, r, turns) {
-  let rotatedQ = q;
-  let rotatedR = r;
+function rotateSquareCell(x, y, turns) {
+  let rotatedX = x;
+  let rotatedY = y;
 
   for (let turn = 0; turn < turns; turn += 1) {
-    [rotatedQ, rotatedR] = rotateAxial60Degrees(rotatedQ, rotatedR);
+    [rotatedX, rotatedY] = [-rotatedY, rotatedX];
   }
 
   return {
-    q: rotatedQ,
-    r: rotatedR
+    x: rotatedX,
+    y: rotatedY
   };
-}
-
-function rotateAxial60Degrees(q, r) {
-  return [-r, q + r];
 }
 
 function addValueToCoordinateMap(coordinateMap, coordinateKey, value) {
@@ -560,16 +845,16 @@ function addValueToCoordinateMap(coordinateMap, coordinateKey, value) {
 function coordinateMapToCells(coordinateMap) {
   return Array.from(coordinateMap.entries())
     .map(([key, value]) => {
-      const [q, r] = key.split(",").map(Number);
+      const [x, y] = key.split(",").map(Number);
 
-      return { q, r, value };
+      return { x, y, value };
     })
     .sort((leftCell, rightCell) => {
-      if (leftCell.r !== rightCell.r) {
-        return leftCell.r - rightCell.r;
+      if (leftCell.y !== rightCell.y) {
+        return leftCell.y - rightCell.y;
       }
 
-      return leftCell.q - rightCell.q;
+      return leftCell.x - rightCell.x;
     });
 }
 
@@ -581,8 +866,12 @@ function reduceDigitalRoot(value) {
   return ((value - 1) % 9) + 1;
 }
 
-function getCellKey(q, r) {
-  return `${q},${r}`;
+function formatToggleState(isEnabled) {
+  return isEnabled ? "on" : "off";
+}
+
+function getCellKey(x, y) {
+  return `${x},${y}`;
 }
 
 function preventContextMenu(event) {

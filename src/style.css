@@ -349,6 +349,28 @@ body[data-theme="light"] .theme-toggle-thumb {
   min-width: 84px;
 }
 
+.hex-editor-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 84px;
+  padding: 10px 14px;
+  border: 1px solid var(--button-border);
+  border-radius: 999px;
+  background: var(--button-secondary-bg);
+  color: var(--app-text);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hex-editor-toggle:has(input:checked) {
+  background: var(--button-bg);
+}
+
+.hex-editor-toggle input {
+  accent-color: var(--slider-accent);
+}
+
 .control-button {
   padding: 10px 14px;
   border: 1px solid var(--button-border);
